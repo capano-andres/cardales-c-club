@@ -1,0 +1,357 @@
+.configuracion-opciones {
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.configuracion-opciones h2 {
+  color: #FFA000;
+  margin-bottom: 1rem;
+  text-align: center;
+  font-size: 2rem;
+}
+
+.instrucciones {
+  text-align: center;
+  color: #ccc;
+  margin-bottom: 2rem;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* === SAVE BUTTON === */
+.guardar-btn {
+  background-color: #FFA000;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: block;
+  margin: 0 auto;
+  min-width: 200px;
+}
+
+.guardar-btn:hover:not(:disabled) {
+  background-color: #e69000;
+  transform: translateY(-2px);
+}
+
+.guardar-btn:disabled {
+  background-color: #666;
+  cursor: not-allowed;
+}
+
+/* === CONFIG SECTION === */
+.config-section {
+  background: #222220;
+  border: 2px solid #FFA000;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.config-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.config-section-title {
+  color: #FFA000;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.global-badge {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #999;
+  background: #333;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.config-section-body {
+  padding: 1rem 1.5rem 1.5rem;
+}
+
+.no-items-msg {
+  color: #666;
+  font-style: italic;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+/* === DAY TABS === */
+.dia-tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 1.5rem;
+  border-bottom: 1px solid #444;
+}
+
+.dia-tab {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #999;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.dia-tab:hover {
+  color: #FFA000;
+}
+
+.dia-tab.active {
+  color: #FFA000;
+  border-bottom-color: #FFA000;
+  font-weight: 600;
+}
+
+.dia-tab-count {
+  background: #444;
+  color: #ccc;
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-size: 0.75rem;
+}
+
+.dia-tab.active .dia-tab-count {
+  background: #FFA000;
+  color: #000;
+}
+
+/* === COPY BUTTON === */
+.copy-days-btn {
+  background: none;
+  border: 1px solid #555;
+  color: #aaa;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.copy-days-btn:hover {
+  border-color: #FFA000;
+  color: #FFA000;
+}
+
+/* === CHIPS === */
+.chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  min-height: 36px;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #333;
+  border: 1px solid #FFA000;
+  color: #fff;
+  border-radius: 20px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.chip:hover {
+  background: #3a3a38;
+}
+
+.chip-postre {
+  border-color: #10b981;
+}
+
+.chip-bebida {
+  border-color: #38bdf8;
+}
+
+.chip-delete {
+  background: none;
+  border: none;
+  color: #ff6b6b;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.15s;
+  display: flex;
+  align-items: center;
+}
+
+.chip-delete:hover {
+  color: #ff4444;
+}
+
+/* === CHIP INPUT === */
+.chip-input-group {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.chip-input {
+  flex: 1;
+  padding: 0.6rem 0.9rem;
+  background: #2a2a28;
+  border: 1px solid #555;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 0.9rem;
+  transition: border-color 0.2s;
+}
+
+.chip-input:focus {
+  outline: none;
+  border-color: #FFA000;
+}
+
+.chip-input::placeholder {
+  color: #666;
+}
+
+.chip-add-btn {
+  background: #FFA000;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.chip-add-btn:hover {
+  background: #e69000;
+}
+
+/* === LOADING === */
+.configuracion-loading {
+  text-align: center;
+  padding: 2rem;
+  color: #FFA000;
+}
+
+/* === Edicion inline de chips === */
+.chip-edit-input {
+  background: #1a1a18;
+  border: 1px solid #FFA000;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.85em;
+  width: 100%;
+  min-width: 80px;
+}
+
+.chip span {
+  cursor: default;
+}
+
+.chip span[title] {
+  cursor: pointer;
+}
+
+/* === POSTRE TOGGLE === */
+.postre-toggle-container {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background: #1a1a18;
+  border-radius: 8px;
+  border: 1px solid #3a3a38;
+}
+
+.postre-toggle-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  cursor: pointer;
+}
+
+.postre-toggle-text {
+  color: #ddd;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.postre-toggle-switch {
+  width: 48px;
+  height: 26px;
+  background: #555;
+  border-radius: 13px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  flex-shrink: 0;
+}
+
+.postre-toggle-switch.active {
+  background: #10b981;
+}
+
+.postre-toggle-knob {
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.3s ease;
+}
+
+.postre-toggle-switch.active .postre-toggle-knob {
+  transform: translateX(22px);
+}
+
+.postre-toggle-hint {
+  color: #10b981;
+  font-size: 0.82rem;
+  margin: 0.5rem 0 0 0;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+.chip-auto {
+  border-color: #10b981 !important;
+  background: #10b98122;
+}
+
+/* === POSTRE DAY TABS === */
+.dia-tabs-postre .dia-tab.active {
+  color: #10b981;
+  border-bottom-color: #10b981;
+}
+
+.dia-tabs-postre .dia-tab:hover {
+  color: #10b981;
+}
+
+.dia-tabs-postre .dia-tab.active .dia-tab-count {
+  background: #10b981;
+  color: #000;
+}

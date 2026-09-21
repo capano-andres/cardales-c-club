@@ -1,0 +1,86 @@
+.menu-selector-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background-color: #222220;
+}
+
+.menu-selector-container h1 {
+  color: #ffffff;
+  margin-bottom: 2rem;
+  text-align: center;
+  font-size: 2.5rem;
+}
+
+.menu-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.menu-button {
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  min-width: 250px;
+  text-align: center;
+}
+
+.menu-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.semana-actual {
+  background-color: #FFA000;
+  color: white;
+}
+
+.semana-actual:hover {
+  background-color: #FFB74D;
+}
+
+.proxima-semana {
+  background-color: #FFA000;
+  color: white;
+}
+
+.proxima-semana:hover {
+  background-color: #FFB74D;
+}
+
+.cerrar-sesion {
+  background-color: #dc3545;
+  color: white;
+  margin-top: 1rem;
+  font-weight: 500;
+  min-width: 200px;
+}
+
+.cerrar-sesion:hover {
+  background-color: #c82333;
+}
+
+@media (max-width: 768px) {
+  .menu-buttons {
+    flex-direction: column;
+  }
+  
+  .menu-button {
+    width: 100%;
+    margin: 0.5rem 0;
+  }
+  
+  h1 {
+    font-size: 2rem;
+    padding: 0 1rem;
+  }
+} 

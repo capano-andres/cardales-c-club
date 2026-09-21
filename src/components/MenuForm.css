@@ -1,0 +1,162 @@
+.menu-form-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  color: #ffffff;
+  font-family: 'Roboto', sans-serif !important;
+}
+
+.menu-form-container h2 {
+  text-align: center;
+  color: #ffffff;
+  margin-bottom: 30px;
+}
+
+.menu-form {
+  background-color: #2a2a28;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  margin-bottom: 30px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #3a3a38;
+  border-radius: 4px;
+  font-size: 16px;
+  background-color: #1a1a18;
+  color: #ffffff;
+}
+
+.form-group textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.form-group.checkbox {
+  display: flex;
+  align-items: center;
+}
+
+.form-group.checkbox input {
+  width: auto;
+  margin-right: 10px;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #FFA000;
+  box-shadow: 0 0 0 2px rgba(255, 160, 0, 0.2);
+}
+
+.error-message {
+  color: #ffffff;
+  background-color: #dc3545;
+  border: 1px solid #c82333;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.success-message {
+  color: #ffffff;
+  background-color: #28a745;
+  border: 1px solid #218838;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.submit-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #FFA000;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.submit-button:hover {
+  background-color: #FFB74D;
+}
+
+.submit-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.menu-list {
+  margin-top: 30px;
+}
+
+.menu-list h3 {
+  color: #ffffff;
+  margin-bottom: 20px;
+}
+
+.menu-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.menu-item {
+  background-color: #2a2a28;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.menu-item h4 {
+  margin: 0 0 10px;
+  color: #FFA000;
+}
+
+.menu-item p {
+  margin: 5px 0;
+  color: #ffffff;
+}
+
+.menu-item .price {
+  font-weight: bold;
+  color: #FFA000;
+}
+
+.menu-item .category {
+  color: #cccccc;
+  font-style: italic;
+}
+
+.menu-item .status {
+  color: #28a745;
+}
+
+.menu-item .status:not(.available) {
+  color: #dc3545;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #ffffff;
+} 

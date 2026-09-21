@@ -1,0 +1,68 @@
+.precio-menu-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #1a1a1a;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.precio-menu-container h2 {
+  color: #FFA000;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.precio-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.precio-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.precio-input-group label {
+  color: #fff;
+  font-weight: 500;
+}
+
+.precio-input-group input {
+  padding: 0.75rem;
+  border: 1px solid #3a3a38;
+  border-radius: 6px;
+  background: #2a2a2a;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.precio-input-group input:focus {
+  outline: none;
+  border-color: #FFA000;
+}
+
+.guardar-precio-btn {
+  background: #FFA000;
+  color: #fff;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.guardar-precio-btn:hover {
+  background: #FFB74D;
+}
+
+.loading {
+  text-align: center;
+  color: #FFA000;
+  font-size: 1.2rem;
+  margin: 2rem 0;
+} 

@@ -1,0 +1,738 @@
+[
+  {
+    "apellido": "Aguilera",
+    "nombre": "Elizabeth",
+    "usuario": "eaguilera",
+    "legajo": "991",
+    "email": "eaguilera@outlook.com",
+    "password": "000991"
+  },
+  {
+    "apellido": "Aguirre",
+    "nombre": "Daniel",
+    "usuario": "daguirre",
+    "legajo": "597",
+    "email": "daguirre@outlook.com",
+    "password": "000597"
+  },
+  {
+    "apellido": "Aguirre",
+    "nombre": "Luis",
+    "usuario": "laguirre",
+    "legajo": "610",
+    "email": "laguirre@outlook.com",
+    "password": "000610"
+  },
+  {
+    "apellido": "Alarcon",
+    "nombre": "Fermin",
+    "usuario": "falarcon",
+    "legajo": "733",
+    "email": "falarcon@outlook.com",
+    "password": "000733"
+  },
+  {
+    "apellido": "Alderete",
+    "nombre": "Luis",
+    "usuario": "lalderete",
+    "legajo": "901",
+    "email": "lalderete@outlook.com",
+    "password": "000901"
+  },
+  {
+    "apellido": "Allegrini",
+    "nombre": "Fabian",
+    "usuario": "fallegrini",
+    "legajo": "910",
+    "email": "fallegrini@outlook.com",
+    "password": "000910"
+  },
+  {
+    "apellido": "Almeida",
+    "nombre": "Marcos",
+    "usuario": "malmeida",
+    "legajo": "930",
+    "email": "malmeida@outlook.com",
+    "password": "000930"
+  },
+  {
+    "apellido": "Alvarez",
+    "nombre": "Ines",
+    "usuario": "ialvarez",
+    "legajo": "983",
+    "email": "ialvarez@outlook.com",
+    "password": "000983"
+  },
+  {
+    "apellido": "Artero",
+    "nombre": "Alejandro",
+    "usuario": "aartero",
+    "legajo": "999",
+    "email": "aartero@outlook.com",
+    "password": "000999"
+  },
+  {
+    "apellido": "Bacca",
+    "nombre": "Mauro",
+    "usuario": "mbacca",
+    "legajo": "941",
+    "email": "mbacca@outlook.com",
+    "password": "000941"
+  },
+  {
+    "apellido": "Bango",
+    "nombre": "Carlos",
+    "usuario": "cbango",
+    "legajo": "106",
+    "email": "cbango@outlook.com",
+    "password": "000106"
+  },
+  {
+    "apellido": "Barreto",
+    "nombre": "Gustavo",
+    "usuario": "gbarreto",
+    "legajo": "987",
+    "email": "gbarreto@outlook.com",
+    "password": "000987"
+  },
+  {
+    "apellido": "Bit",
+    "nombre": "Roberto",
+    "usuario": "rbit",
+    "legajo": "913",
+    "email": "rbit@outlook.com",
+    "password": "000913"
+  },
+  {
+    "apellido": "Carballo",
+    "nombre": "Ricardo",
+    "usuario": "rcarballo",
+    "legajo": "978",
+    "email": "rcarballo@outlook.com",
+    "password": "000978"
+  },
+  {
+    "apellido": "Cardozo",
+    "nombre": "Diego",
+    "usuario": "dcardozo",
+    "legajo": "1000",
+    "email": "dcardozo@outlook.com",
+    "password": "001000"
+  },
+  {
+    "apellido": "Carreño",
+    "nombre": "Rocio",
+    "usuario": "rcarreno",
+    "legajo": "1001",
+    "email": "rcarreno@outlook.com",
+    "password": "001001"
+  },
+  {
+    "apellido": "Coronel",
+    "nombre": "Ramon",
+    "usuario": "rcoronel",
+    "legajo": "765",
+    "email": "rcoronel@outlook.com",
+    "password": "000765"
+  },
+  {
+    "apellido": "Cueva",
+    "nombre": "Emmanuel",
+    "usuario": "ecueva",
+    "legajo": "986",
+    "email": "ecueva@outlook.com",
+    "password": "000986"
+  },
+  {
+    "apellido": "Dallera",
+    "nombre": "Johanna",
+    "usuario": "jdallera",
+    "legajo": "980",
+    "email": "jdallera@outlook.com",
+    "password": "000980"
+  },
+  {
+    "apellido": "Dealascio",
+    "nombre": "Marcelo",
+    "usuario": "mdealascio",
+    "legajo": "411",
+    "email": "mdealascio@outlook.com",
+    "password": "000411"
+  },
+  {
+    "apellido": "Diaz",
+    "nombre": "Mariano",
+    "usuario": "mdiaz",
+    "legajo": "455",
+    "email": "mdiaz@outlook.com",
+    "password": "000455"
+  },
+  {
+    "apellido": "Duarte",
+    "nombre": "Arturo",
+    "usuario": "aduarte",
+    "legajo": "892",
+    "email": "aduarte@outlook.com",
+    "password": "000892"
+  },
+  {
+    "apellido": "Fava",
+    "nombre": "Julio",
+    "usuario": "jfava",
+    "legajo": "834",
+    "email": "jfava@outlook.com",
+    "password": "000834"
+  },
+  {
+    "apellido": "Flores",
+    "nombre": "Sergio",
+    "usuario": "sflores",
+    "legajo": "845",
+    "email": "sflores@outlook.com",
+    "password": "000845"
+  },
+  {
+    "apellido": "Galarza",
+    "nombre": "Ernesto",
+    "usuario": "egalarza",
+    "legajo": "35",
+    "email": "egalarza@outlook.com",
+    "password": "000035"
+  },
+  {
+    "apellido": "Galeano",
+    "nombre": "Veronica",
+    "usuario": "vgaleano",
+    "legajo": "893",
+    "email": "vgaleano@outlook.com",
+    "password": "000893"
+  },
+  {
+    "apellido": "Garcia",
+    "nombre": "Roberto",
+    "usuario": "rgarcia",
+    "legajo": "798",
+    "email": "rgarcia@outlook.com",
+    "password": "000798"
+  },
+  {
+    "apellido": "Gimenez",
+    "nombre": "Rodrigo",
+    "usuario": "rgimenez",
+    "legajo": "719",
+    "email": "rgimenez@outlook.com",
+    "password": "000719"
+  },
+  {
+    "apellido": "Gonzalez",
+    "nombre": "Jesus",
+    "usuario": "jgonzalez",
+    "legajo": "982",
+    "email": "jgonzalez@outlook.com",
+    "password": "000982"
+  },
+  {
+    "apellido": "Gonzalez",
+    "nombre": "Hilario",
+    "usuario": "hgonzalez",
+    "legajo": "568",
+    "email": "hgonzalez@outlook.com",
+    "password": "000568"
+  },
+  {
+    "apellido": "Gonzalez",
+    "nombre": "Enrique",
+    "usuario": "egonzalez",
+    "legajo": "966",
+    "email": "egonzalez@outlook.com",
+    "password": "000966"
+  },
+  {
+    "apellido": "Gonzalez",
+    "nombre": "Marcelo",
+    "usuario": "mgonzalez",
+    "legajo": "817",
+    "email": "mgonzalez@outlook.com",
+    "password": "000817"
+  },
+  {
+    "apellido": "Grecco",
+    "nombre": "Soledad",
+    "usuario": "sgrecco",
+    "legajo": "899",
+    "email": "sgrecco@outlook.com",
+    "password": "000899"
+  },
+  {
+    "apellido": "Harris",
+    "nombre": "Ricardo",
+    "usuario": "rharris",
+    "legajo": "985",
+    "email": "rharris@outlook.com",
+    "password": "000985"
+  },
+  {
+    "apellido": "Ibañez",
+    "nombre": "Raul",
+    "usuario": "ribanez",
+    "legajo": "538",
+    "email": "ribanez@outlook.com",
+    "password": "000538"
+  },
+  {
+    "apellido": "Lacco",
+    "nombre": "Roberto",
+    "usuario": "rlacco",
+    "legajo": "837",
+    "email": "rlacco@outlook.com",
+    "password": "000837"
+  },
+  {
+    "apellido": "Lacco",
+    "nombre": "Juan",
+    "usuario": "jlacco",
+    "legajo": "860",
+    "email": "jlacco@outlook.com",
+    "password": "000860"
+  },
+  {
+    "apellido": "Lencina",
+    "nombre": "Mirta",
+    "usuario": "mlencina",
+    "legajo": "603",
+    "email": "mlencina@outlook.com",
+    "password": "000603"
+  },
+  {
+    "apellido": "Lopez",
+    "nombre": "Francisco",
+    "usuario": "flopez",
+    "legajo": "784",
+    "email": "flopez@outlook.com",
+    "password": "000784"
+  },
+  {
+    "apellido": "Lopez",
+    "nombre": "Maximiliano",
+    "usuario": "mlopez",
+    "legajo": "799",
+    "email": "mlopez@outlook.com",
+    "password": "000799"
+  },
+  {
+    "apellido": "Lucila",
+    "nombre": "",
+    "usuario": "lucila",
+    "legajo": "2001",
+    "email": "lucila@outlook.com",
+    "password": "002001"
+  },
+  {
+    "apellido": "Luna",
+    "nombre": "Jose",
+    "usuario": "jluna",
+    "legajo": "539",
+    "email": "jluna@outlook.com",
+    "password": "000539"
+  },
+  {
+    "apellido": "Medico",
+    "nombre": "2",
+    "usuario": "medico2",
+    "legajo": "2003",
+    "email": "medico2@outlook.com",
+    "password": "002003"
+  },
+  {
+    "apellido": "Medico",
+    "nombre": "1",
+    "usuario": "medico1",
+    "legajo": "2002",
+    "email": "medico1@outlook.com",
+    "password": "002002"
+  },
+  {
+    "apellido": "Medina",
+    "nombre": "Pablo",
+    "usuario": "pmedina",
+    "legajo": "484",
+    "email": "pmedina@outlook.com",
+    "password": "000484"
+  },
+  {
+    "apellido": "Montiel",
+    "nombre": "Nicolas",
+    "usuario": "nmontiel",
+    "legajo": "998",
+    "email": "nmontiel@outlook.com",
+    "password": "000998"
+  },
+  {
+    "apellido": "Mossier",
+    "nombre": "Gustavo",
+    "usuario": "gmossier",
+    "legajo": "732",
+    "email": "gmossier@outlook.com",
+    "password": "000732"
+  },
+  {
+    "apellido": "Olivera",
+    "nombre": "Franco",
+    "usuario": "folivera",
+    "legajo": "842",
+    "email": "folivera@outlook.com",
+    "password": "000842"
+  },
+  {
+    "apellido": "Ortega",
+    "nombre": "Jose",
+    "usuario": "jortega",
+    "legajo": "838",
+    "email": "jortega@outlook.com",
+    "password": "000838"
+  },
+  {
+    "apellido": "Paez",
+    "nombre": "Daniela",
+    "usuario": "dpaez",
+    "legajo": "855",
+    "email": "dpaez@outlook.com",
+    "password": "000855"
+  },
+  {
+    "apellido": "Palacios",
+    "nombre": "Hernan",
+    "usuario": "hpalacios",
+    "legajo": "875",
+    "email": "hpalacios@outlook.com",
+    "password": "000875"
+  },
+  {
+    "apellido": "Patiño",
+    "nombre": "Carlos",
+    "usuario": "cpatino",
+    "legajo": "865",
+    "email": "cpatino@outlook.com",
+    "password": "000865"
+  },
+  {
+    "apellido": "Peninno",
+    "nombre": "Marina",
+    "usuario": "mpeninno",
+    "legajo": "939",
+    "email": "mpeninno@outlook.com",
+    "password": "000939"
+  },
+  {
+    "apellido": "Peralta",
+    "nombre": "Eduardo",
+    "usuario": "eperalta",
+    "legajo": "950",
+    "email": "eperalta@outlook.com",
+    "password": "000950"
+  },
+  {
+    "apellido": "Peralta",
+    "nombre": "Alejandro",
+    "usuario": "aperalta",
+    "legajo": "869",
+    "email": "aperalta@outlook.com",
+    "password": "000869"
+  },
+  {
+    "apellido": "Pinto",
+    "nombre": "Gabriela",
+    "usuario": "gpinto",
+    "legajo": "997",
+    "email": "gpinto@outlook.com",
+    "password": "000997"
+  },
+  {
+    "apellido": "Pogonza",
+    "nombre": "Horacio",
+    "usuario": "hpogonza",
+    "legajo": "792",
+    "email": "hpogonza@outlook.com",
+    "password": "000792"
+  },
+  {
+    "apellido": "Quinteros",
+    "nombre": "Cesar",
+    "usuario": "cquinteros",
+    "legajo": "493",
+    "email": "cquinteros@outlook.com",
+    "password": "000493"
+  },
+  {
+    "apellido": "Quinteros",
+    "nombre": "Ramon",
+    "usuario": "rquinteros",
+    "legajo": "791",
+    "email": "rquinteros@outlook.com",
+    "password": "000791"
+  },
+  {
+    "apellido": "Quiroga",
+    "nombre": "Facundo",
+    "usuario": "fquiroga",
+    "legajo": "946",
+    "email": "fquiroga@outlook.com",
+    "password": "000946"
+  },
+  {
+    "apellido": "Quiroga",
+    "nombre": "Sergio",
+    "usuario": "squiroga",
+    "legajo": "813",
+    "email": "squiroga@outlook.com",
+    "password": "000813"
+  },
+  {
+    "apellido": "Rodriguez",
+    "nombre": "Juan",
+    "usuario": "jrodriguez774",
+    "legajo": "774",
+    "email": "jrodriguez774@outlook.com",
+    "password": "000774"
+  },
+  {
+    "apellido": "Rodriguez",
+    "nombre": "Javier",
+    "usuario": "jrodriguez936",
+    "legajo": "936",
+    "email": "jrodriguez936@outlook.com",
+    "password": "000936"
+  },
+  {
+    "apellido": "Rodriguez",
+    "nombre": "Jose",
+    "usuario": "jrodriguez894",
+    "legajo": "894",
+    "email": "jrodriguez894@outlook.com",
+    "password": "000894"
+  },
+  {
+    "apellido": "Roldan",
+    "nombre": "Maira",
+    "usuario": "mroldan",
+    "legajo": "965",
+    "email": "mroldan@outlook.com",
+    "password": "000965"
+  },
+  {
+    "apellido": "Romero",
+    "nombre": "Matias",
+    "usuario": "mromero",
+    "legajo": "881",
+    "email": "mromero@outlook.com",
+    "password": "000881"
+  },
+  {
+    "apellido": "Romero",
+    "nombre": "Nicolas",
+    "usuario": "nromero",
+    "legajo": "918",
+    "email": "nromero@outlook.com",
+    "password": "000918"
+  },
+  {
+    "apellido": "Romero",
+    "nombre": "Raul",
+    "usuario": "rromero",
+    "legajo": "535",
+    "email": "rromero@outlook.com",
+    "password": "000535"
+  },
+  {
+    "apellido": "Romero",
+    "nombre": "Fabian",
+    "usuario": "fromero",
+    "legajo": "808",
+    "email": "fromero@outlook.com",
+    "password": "000808"
+  },
+  {
+    "apellido": "Rosales",
+    "nombre": "Mirta",
+    "usuario": "mrosales",
+    "legajo": "800",
+    "email": "mrosales@outlook.com",
+    "password": "000800"
+  },
+  {
+    "apellido": "Ruben",
+    "nombre": "",
+    "usuario": "ruben",
+    "legajo": "2000",
+    "email": "ruben@outlook.com",
+    "password": "002000"
+  },
+  {
+    "apellido": "Sanchez",
+    "nombre": "Alberto",
+    "usuario": "asanchez",
+    "legajo": "852",
+    "email": "asanchez@outlook.com",
+    "password": "000852"
+  },
+  {
+    "apellido": "Sanchez",
+    "nombre": "Leonardo",
+    "usuario": "lsanchez",
+    "legajo": "849",
+    "email": "lsanchez@outlook.com",
+    "password": "000849"
+  },
+  {
+    "apellido": "Sanchez",
+    "nombre": "Juan",
+    "usuario": "jsanchez",
+    "legajo": "931",
+    "email": "jsanchez@outlook.com",
+    "password": "000931"
+  },
+  {
+    "apellido": "Sanchez",
+    "nombre": "Rosendo",
+    "usuario": "rsanchez",
+    "legajo": "928",
+    "email": "rsanchez@outlook.com",
+    "password": "000928"
+  },
+  {
+    "apellido": "Sanchez",
+    "nombre": "Paola",
+    "usuario": "psanchez",
+    "legajo": "975",
+    "email": "psanchez@outlook.com",
+    "password": "000975"
+  },
+  {
+    "apellido": "Santillan",
+    "nombre": "Alejo",
+    "usuario": "asantillan",
+    "legajo": "968",
+    "email": "asantillan@outlook.com",
+    "password": "000968"
+  },
+  {
+    "apellido": "Schweizer",
+    "nombre": "Guillermo",
+    "usuario": "gschweizer",
+    "legajo": "951",
+    "email": "gschweizer@outlook.com",
+    "password": "000951"
+  },
+  {
+    "apellido": "Sena",
+    "nombre": "Matias",
+    "usuario": "msena",
+    "legajo": "981",
+    "email": "msena@outlook.com",
+    "password": "000981"
+  },
+  {
+    "apellido": "Soria",
+    "nombre": "Marino",
+    "usuario": "msoria",
+    "legajo": "480",
+    "email": "msoria@outlook.com",
+    "password": "000480"
+  },
+  {
+    "apellido": "Sualdias",
+    "nombre": "Denise",
+    "usuario": "dsualdias",
+    "legajo": "945",
+    "email": "dsualdias@outlook.com",
+    "password": "000945"
+  },
+  {
+    "apellido": "Veliz",
+    "nombre": "Marcelino",
+    "usuario": "mveliz725",
+    "legajo": "725",
+    "email": "mveliz725@outlook.com",
+    "password": "000725"
+  },
+  {
+    "apellido": "Veliz",
+    "nombre": "Mauricio",
+    "usuario": "mveliz873",
+    "legajo": "873",
+    "email": "mveliz873@outlook.com",
+    "password": "000873"
+  },
+  {
+    "apellido": "Veliz",
+    "nombre": "Dante",
+    "usuario": "dveliz",
+    "legajo": "148",
+    "email": "dveliz@outlook.com",
+    "password": "000148"
+  },
+  {
+    "apellido": "Vercelli",
+    "nombre": "Claudia",
+    "usuario": "cvercelli",
+    "legajo": "840",
+    "email": "cvercelli@outlook.com",
+    "password": "000840"
+  },
+  {
+    "apellido": "Villalba",
+    "nombre": "Hernan",
+    "usuario": "hvillalba",
+    "legajo": "950",
+    "email": "hvillalba@outlook.com",
+    "password": "000950"
+  },
+  {
+    "apellido": "Villegas",
+    "nombre": "Cecilia",
+    "usuario": "cvillegas",
+    "legajo": "878",
+    "email": "cvillegas@outlook.com",
+    "password": "000878"
+  },
+  {
+    "apellido": "Vital",
+    "nombre": "Hector",
+    "usuario": "hvital",
+    "legajo": "245",
+    "email": "hvital@outlook.com",
+    "password": "000245"
+  },
+  {
+    "apellido": "Wdoviak",
+    "nombre": "Hugo",
+    "usuario": "hwdoviak",
+    "legajo": "427",
+    "email": "hwdoviak@outlook.com",
+    "password": "000427"
+  },
+  {
+    "apellido": "Yglesias",
+    "nombre": "Atilio",
+    "usuario": "ayglesias",
+    "legajo": "626",
+    "email": "ayglesias@outlook.com",
+    "password": "000626"
+  },
+  {
+    "apellido": "Zarate",
+    "nombre": "Roberto",
+    "usuario": "rzarate",
+    "legajo": "826",
+    "email": "rzarate@outlook.com",
+    "password": "000826"
+  },
+  {
+    "apellido": "Zurita",
+    "nombre": "Fernando",
+    "usuario": "fzurita",
+    "legajo": "856",
+    "email": "fzurita@outlook.com",
+    "password": "000856"
+  }
+]

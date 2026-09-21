@@ -1,0 +1,114 @@
+.admin-dashboard {
+  min-height: 100vh;
+  padding: 2rem;
+  background-color: #222220;
+  color: #ffffff;
+  font-family: 'Roboto', sans-serif !important;
+}
+
+.admin-dashboard-title {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #ffffff;
+  font-size: 2rem;
+}
+
+.admin-buttons-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.admin-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  width: 75%;
+  height: 50%;
+  background-color: #FFA000;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  text-align: center;
+  min-height: 150px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.admin-button:hover {
+  transform: translateY(-2px);
+  background-color: #FFB74D;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.button-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: #ffffff;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #FFA000;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  margin-bottom: 2rem;
+}
+
+.back-button:hover {
+  background-color: #FFB74D;
+  transform: translateX(-2px);
+}
+
+.admin-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.error-message {
+  color: #ffffff;
+  text-transform: uppercase;
+  font-weight: bold;
+  text-align: center;
+  padding: 1rem;
+  margin: 1rem 0;
+  background-color: #dc3545;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 1024px) {
+  .admin-buttons-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-buttons-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .admin-dashboard {
+    padding: 1rem;
+  }
+  
+  .admin-button {
+    min-height: 120px;
+  }
+} 

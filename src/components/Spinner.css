@@ -1,0 +1,79 @@
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+}
+
+/* Make the selector more specific */
+div.spinner,
+.spinner-container .spinner {
+  width: 60px;
+  height: 60px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  background: transparent;
+}
+
+div.spinner::before,
+.spinner-container .spinner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 8px solid transparent;
+  border-radius: 50%;
+  border-top: 8px solid #FFECB3;
+  border-right: 8px solid #FFECB3;
+  border-bottom: 8px solid #FFA000;
+  border-left: 8px solid #FFA000;
+  animation: spin 1s ease-in-out infinite;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.9),
+              inset 0 0 15px rgba(0, 0, 0, 0.7),
+              0 0 5px rgba(255, 236, 179, 0.3);
+  filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.8))
+         drop-shadow(0 0 2px rgba(255, 236, 179, 0.4));
+}
+
+div.spinner::after,
+.spinner-container .spinner::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  border: 2px solid #FFA000;
+  animation: wave 0.8s ease-out infinite;
+  background: transparent;
+}
+
+div.spinner::after,
+.spinner-container .spinner::after {
+  animation-delay: 0.4s;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes wave {
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+} 

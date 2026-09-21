@@ -1,0 +1,163 @@
+.ver-menu-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Roboto', sans-serif !important;
+}
+
+.menu-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.menu-header h2 {
+  font-size: 2em;
+  color: #cccccc;
+  margin-bottom: 10px;
+}
+
+.menu-header h3 {
+  font-size: 1.5em;
+  color: #cccccc;
+  margin-bottom: 5px;
+}
+
+.menu-header h4 {
+  font-size: 1.2em;
+  color: #cccccc;
+}
+
+.menu-dias {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.dia-menu {
+  background-color: #2a2a28;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.dia-menu h3 {
+  color: #FFA000;
+  border-bottom: 2px solid #FFA000;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.menu-items {
+  display: grid;
+  gap: 15px;
+}
+
+.menu-item {
+  padding: 10px;
+  border-radius: 8px;
+  background-color: #1a1a18;
+}
+
+.menu-item h4 {
+  color: #FFA000;
+  margin-bottom: 5px;
+  font-size: 1.1em;
+}
+
+.menu-item p {
+  color: #cccccc;
+  margin: 0;
+}
+
+.opciones-adicionales {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #1a1a18;
+  border-radius: 8px;
+}
+
+.opciones-adicionales h4 {
+  color: #FFA000;
+  margin-bottom: 8px;
+}
+
+.opciones-adicionales ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.opciones-adicionales li {
+  color: #cccccc;
+  margin-bottom: 5px;
+  padding-left: 20px;
+  position: relative;
+}
+
+.opciones-adicionales li:before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #FFA000;
+}
+
+.sandwich-miga,
+.ensalada,
+.postre {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #1a1a18;
+  border-radius: 8px;
+}
+
+.sandwich-miga h4,
+.ensalada h4,
+.postre h4 {
+  color: #FFA000;
+  margin-bottom: 5px;
+}
+
+.feriado {
+  background-color: #2a2a28;
+  border: 1px solid #FFA000;
+}
+
+.feriado-message {
+  color: #cccccc;
+  text-align: center;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.ultima-actualizacion {
+  text-align: center;
+  color: #cccccc;
+  font-size: 0.9em;
+  margin-top: 20px;
+}
+
+.loading,
+.error,
+.no-menu {
+  text-align: center;
+  padding: 20px;
+  margin: 20px;
+  border-radius: 8px;
+}
+
+.loading {
+  color: #cccccc;
+}
+
+.error {
+  color: #cccccc;
+  background-color: #dc3545;
+  border: 1px solid #c82333;
+}
+
+.no-menu {
+  color: #cccccc;
+  background-color: #2a2a28;
+  border: 1px solid #3a3a38;
+} 

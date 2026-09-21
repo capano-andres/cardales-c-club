@@ -1,0 +1,39 @@
+.cierre-semanal-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background-color: #222220;
+}
+
+.cierre-semanal-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.cierre-semanal-header h1 {
+  color: #FFA000;
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.cierre-semanal-header p {
+  color: #cccccc;
+  font-size: 1.1rem;
+}
+
+.cierre-semanal-content {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.cierre-semanal-card {
+  background: #2a2a28;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  padding: 2rem;
+  width: 100%;
+  max-width: 800px;
+  border: 1px solid #3a3a38;
+} 
