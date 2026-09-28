@@ -4,6 +4,7 @@ import { doc, getDoc, deleteDoc, setDoc } from 'firebase/firestore';
 import Modal from './Modal';
 import Spinner from './Spinner';
 import jsPDF from 'jspdf';
+import { DIAS_SEMANA, DIA_LABELS } from '../constants/dias';
 import './AdminMenu.css';
 
 const AdminMenu = ({ onMenuDeleted, tipo = 'actual', readOnly = false }) => {
@@ -244,13 +245,7 @@ const AdminMenu = ({ onMenuDeleted, tipo = 'actual', readOnly = false }) => {
       }
 
       // Días del menú
-      const dias = [
-        { key: 'lunes', nombre: 'LUNES' },
-        { key: 'martes', nombre: 'MARTES' },
-        { key: 'miercoles', nombre: 'MIÉRCOLES' },
-        { key: 'jueves', nombre: 'JUEVES' },
-        { key: 'viernes', nombre: 'VIERNES' }
-      ];
+      const dias = DIAS_SEMANA.map((key) => ({ key, nombre: DIA_LABELS[key].toUpperCase() }));
 
       dias.forEach(dia => {
         const diaData = menuData.dias[dia.key];
@@ -491,7 +486,7 @@ const AdminMenu = ({ onMenuDeleted, tipo = 'actual', readOnly = false }) => {
 
       {menuData && (
         <div className="menu-dias">
-          {['lunes', 'martes', 'miercoles', 'jueves', 'viernes'].map(dia => (
+          {DIAS_SEMANA.map(dia => (
             <div key={dia}>
               {renderDiaMenu(dia, dia.charAt(0).toUpperCase() + dia.slice(1))}
             </div>

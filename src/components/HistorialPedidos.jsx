@@ -3,6 +3,7 @@ import { db } from '../firebase';
 import { collection, getDocs, doc, updateDoc, setDoc, getDoc, deleteDoc, query, where, orderBy } from 'firebase/firestore';
 import Modal from './Modal';
 import Spinner from './Spinner';
+import { DIAS_SEMANA, DIA_LABELS } from '../constants/dias';
 import './HistorialPedidos.css';
 import * as XLSX from 'xlsx';
 
@@ -14,7 +15,7 @@ const HistorialPedidos = ({ readOnly = false }) => {
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
   const [historialSeleccionado, setHistorialSeleccionado] = useState([]);
   const [editandoPedido, setEditandoPedido] = useState(null); // {pedido, modo: 'historial'|'actual'}
-  const [formEdit, setFormEdit] = useState({ lunes: '', martes: '', miercoles: '', jueves: '', viernes: '', precioTotal: 0 });
+  const [formEdit, setFormEdit] = useState({ ...Object.fromEntries(DIAS_SEMANA.map((dia) => [dia, ''])), precioTotal: 0 });
   const [opcionesMenuConfig, setOpcionesMenuConfig] = useState(null);
   const [precioMenuConfig, setPrecioMenuConfig] = useState(null);
   const [opcionesCascada, setOpcionesCascada] = useState(null);
@@ -36,12 +37,12 @@ const HistorialPedidos = ({ readOnly = false }) => {
   // Calcular precio automáticamente
   useEffect(() => {
     if (editandoPedido) {
-      const dias = [formEdit.lunes, formEdit.martes, formEdit.miercoles, formEdit.jueves, formEdit.viernes];
+      const dias = DIAS_SEMANA.map((dia) => formEdit[dia]);
       const precio = dias.filter(dia => dia && dia !== 'no_pedir').length * 1700;
       setFormEdit(prev => ({ ...prev, precioTotal: precio }));
     }
     // eslint-disable-next-line
-  }, [formEdit.lunes, formEdit.martes, formEdit.miercoles, formEdit.jueves, formEdit.viernes]);
+  }, [formEdit.lunes, formEdit.martes, formEdit.miercoles, formEdit.jueves, formEdit.viernes, formEdit.sabado, formEdit.domingo]);
 
   // Recargar historial del usuario seleccionado tras editar/eliminar
   const recargarHistorialSeleccionado = async (uidUsuario) => {
@@ -165,8 +166,7 @@ const HistorialPedidos = ({ readOnly = false }) => {
       if (typeof diaData !== 'object' || diaData === null) return pedidoStr;
 
       // Obtener la lista de menús configurados para este día
-      const labelMap = { 'lunes': 'Lunes', 'martes': 'Martes', 'miercoles': 'Miercoles', 'jueves': 'Jueves', 'viernes': 'Viernes' };
-      const diaLabel = labelMap[dia] || dia;
+      const diaLabel = DIA_LABELS[dia] || dia;
       let menusList = [];
       if (opcionesCascada?.menus) {
         const menusKey = Object.keys(opcionesCascada.menus).find(k => norm(k) === norm(diaLabel)) || diaLabel;
@@ -185,7 +185,7 @@ const HistorialPedidos = ({ readOnly = false }) => {
       if (!menuTipo) return pedidoStr;
 
       // Buscar la vianda en menuDias[dia] que corresponda a este tipo de menú
-      // Las claves en menuDias[dia] son: opcion1, opcionpebetex2, pastas, light, clasico, etc.
+      // Las claves en menuDias[dia] son: opcion1, menupbtx2, pastas, light, clasico, etc.
       // Usamos un mapeo explícito nombre→clave para buscar la vianda
       let viandaDesc = '';
       const menuNorm = norm(menuTipo);
@@ -193,7 +193,7 @@ const HistorialPedidos = ({ readOnly = false }) => {
       // Mapeo explícito de nombres de menú a claves de Firestore
       const mappings = [
         { names: ['beti jai'], keys: ['opcion1'] },
-        { names: ['menu pbt', 'pbt', 'opcion pebete', 'pebete'], keys: ['opcionpebetex2'] },
+        { names: ['menu pbt', 'pbt', 'opcion pebete', 'pebete'], keys: ['menupbtx2'] },
         { names: ['pastas', 'pasta'], keys: ['pastas', 'pasta'] },
         { names: ['light'], keys: ['light'] },
         { names: ['clasico', 'clásico'], keys: ['clasico'] },
@@ -342,8 +342,8 @@ const HistorialPedidos = ({ readOnly = false }) => {
   const calcularPrecioCorrecto = (usuario, pedido) => {
     if (!precioMenuConfig) return pedido.precioTotal || 0;
     
-    // Los días son objetos con estructura {pedido: 'valor', esTardio: false}
-    const dias = [pedido.lunes, pedido.martes, pedido.miercoles, pedido.jueves, pedido.viernes];
+    // Los días son objetos con estructura {pedido: 'valor'}
+    const dias = DIAS_SEMANA.map((dia) => pedido[dia]);
     
     // Filtrar días que tengan pedido y no sea 'no_pedir'
     const diasConPedido = dias.filter(dia => {
@@ -409,11 +409,7 @@ const HistorialPedidos = ({ readOnly = false }) => {
   const handleEditarPedido = (pedido, modo) => {
     setEditandoPedido({ pedido, modo });
     setFormEdit({
-      lunes: pedido.lunes || '',
-      martes: pedido.martes || '',
-      miercoles: pedido.miercoles || '',
-      jueves: pedido.jueves || '',
-      viernes: pedido.viernes || '',
+      ...Object.fromEntries(DIAS_SEMANA.map((dia) => [dia, pedido[dia] || ''])),
       precioTotal: pedido.precioTotal || 0
     });
   };
@@ -431,11 +427,7 @@ const HistorialPedidos = ({ readOnly = false }) => {
         // Actualizar en historial_pedidos
         const ref = doc(db, 'historial_pedidos', pedido.id);
         await updateDoc(ref, {
-          lunes: formEdit.lunes,
-          martes: formEdit.martes,
-          miercoles: formEdit.miercoles,
-          jueves: formEdit.jueves,
-          viernes: formEdit.viernes,
+          ...Object.fromEntries(DIAS_SEMANA.map((dia) => [dia, formEdit[dia]])),
           precioTotal: Number(formEdit.precioTotal)
         });
         await recargarHistorialSeleccionado(pedido.uidUsuario);
@@ -454,11 +446,7 @@ const HistorialPedidos = ({ readOnly = false }) => {
         }
         await setDoc(ref, {
           ...pedido,
-          lunes: formEdit.lunes,
-          martes: formEdit.martes,
-          miercoles: formEdit.miercoles,
-          jueves: formEdit.jueves,
-          viernes: formEdit.viernes,
+          ...Object.fromEntries(DIAS_SEMANA.map((dia) => [dia, formEdit[dia]])),
           precioTotal: Number(formEdit.precioTotal),
           tipo: 'actual',
           uidUsuario: pedido.uidUsuario
@@ -546,20 +534,20 @@ const HistorialPedidos = ({ readOnly = false }) => {
             'Nombre': usuario.nombre
           };
 
-          // Agregar columnas para cada semana (5 columnas por semana: Lunes a Viernes)
+          // Agregar columnas para cada semana (una columna por día, Lunes a Domingo)
           semanasOrdenadas.forEach(semana => {
             // Encontrar el pedido correspondiente a esta semana
             const pedidoSemana = usuario.pedidos.find(pedido => {
               return pedido.semana === semana;
             });
 
-            // Crear 5 columnas para los días de la semana
-            const nombresDias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+            // Crear una columna por cada día de la semana
+            const nombresDias = DIAS_SEMANA.map((dia) => DIA_LABELS[dia]);
             nombresDias.forEach((dia, index) => {
               const columnaKey = `${semana}_${dia}`;
-              
+
               if (pedidoSemana) {
-                const dias = [pedidoSemana.lunes, pedidoSemana.martes, pedidoSemana.miercoles, pedidoSemana.jueves, pedidoSemana.viernes];
+                const dias = DIAS_SEMANA.map((d) => pedidoSemana[d]);
                 const precioDia = calcularPrecioPorDia(usuario, dias[index]);
                 filaUsuario[columnaKey] = Number(precioDia);
               } else {
@@ -577,7 +565,7 @@ const HistorialPedidos = ({ readOnly = false }) => {
       
       // Obtener todas las columnas posibles
       semanasOrdenadas.forEach(semana => {
-        const nombresDias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+        const nombresDias = DIAS_SEMANA.map((dia) => DIA_LABELS[dia]);
         nombresDias.forEach(dia => {
           todasLasColumnas.add(`${semana}_${dia}`);
         });
@@ -602,7 +590,7 @@ const HistorialPedidos = ({ readOnly = false }) => {
         
         if (columnasSemana.length > 0) {
           // Ordenar columnas por día
-          const nombresDias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+          const nombresDias = DIAS_SEMANA.map((dia) => DIA_LABELS[dia]);
           columnasSemana.sort((a, b) => {
             const [, diaA] = a.split('_');
             const [, diaB] = b.split('_');
@@ -648,8 +636,8 @@ const HistorialPedidos = ({ readOnly = false }) => {
       semanasOrdenadas.forEach(semana => {
         const columnasSemana = columnasPorSemana.get(semana);
         if (columnasSemana && columnasSemana.length > 0) {
-          // Ordenar columnas por día (Lunes, Martes, Miércoles, Jueves, Viernes)
-          const nombresDias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+          // Ordenar columnas por día (Lunes a Domingo)
+          const nombresDias = DIAS_SEMANA.map((dia) => DIA_LABELS[dia]);
           columnasSemana.sort((a, b) => {
             return nombresDias.indexOf(a.dia) - nombresDias.indexOf(b.dia);
           });
@@ -762,11 +750,9 @@ const HistorialPedidos = ({ readOnly = false }) => {
                       </span>
                     </div>
                     <div className="pedido-dias">
-                      <div className="dia-pedido"><strong>Lunes:</strong> {formatearOpcion(pedido.lunes, 'lunes', pedido.menuDias)}</div>
-                      <div className="dia-pedido"><strong>Martes:</strong> {formatearOpcion(pedido.martes, 'martes', pedido.menuDias)}</div>
-                      <div className="dia-pedido"><strong>Miércoles:</strong> {formatearOpcion(pedido.miercoles, 'miercoles', pedido.menuDias)}</div>
-                      <div className="dia-pedido"><strong>Jueves:</strong> {formatearOpcion(pedido.jueves, 'jueves', pedido.menuDias)}</div>
-                      <div className="dia-pedido"><strong>Viernes:</strong> {formatearOpcion(pedido.viernes, 'viernes', pedido.menuDias)}</div>
+                      {DIAS_SEMANA.map((dia) => (
+                        <div key={dia} className="dia-pedido"><strong>{DIA_LABELS[dia]}:</strong> {formatearOpcion(pedido[dia], dia, pedido.menuDias)}</div>
+                      ))}
                     </div>
                     <div className="pedido-footer">
                       <span className="precio-total">Total: ${pedido.precioTotal || 0}</span>
@@ -788,86 +774,24 @@ const HistorialPedidos = ({ readOnly = false }) => {
           <div className="editar-pedido-modal" ref={editFormRef}>
             <h4>Editar pedido ({editandoPedido.modo === 'historial' ? 'Historial' : 'Pedido Actual'})</h4>
             <form onSubmit={e => {e.preventDefault(); handleGuardarEdicion();}} style={{display:'flex', flexDirection:'column', gap:'0.5rem'}}>
-              <label>Lunes:
-                <select name="lunes" value={formEdit.lunes} onChange={handleChangeEdit} className="select-edit">
-                  <option value="">Selecciona una opción</option>
-                  {opcionesMenuConfig?.Lunes
-                    ?.sort((a, b) => {
-                      if (a === "NO PEDIR") return -1;
-                      if (b === "NO PEDIR") return 1;
-                      return a.localeCompare(b);
-                    })
-                    .map((opcion, index) => (
-                      <option key={index} value={opcion.toLowerCase().replace(/\s+/g, '_')}>
-                        {opcion}
-                      </option>
-                    ))}
-                </select>
-              </label>
-              <label>Martes:
-                <select name="martes" value={formEdit.martes} onChange={handleChangeEdit} className="select-edit">
-                  <option value="">Selecciona una opción</option>
-                  {opcionesMenuConfig?.Martes
-                    ?.sort((a, b) => {
-                      if (a === "NO PEDIR") return -1;
-                      if (b === "NO PEDIR") return 1;
-                      return a.localeCompare(b);
-                    })
-                    .map((opcion, index) => (
-                      <option key={index} value={opcion.toLowerCase().replace(/\s+/g, '_')}>
-                        {opcion}
-                      </option>
-                    ))}
-                </select>
-              </label>
-              <label>Miércoles:
-                <select name="miercoles" value={formEdit.miercoles} onChange={handleChangeEdit} className="select-edit">
-                  <option value="">Selecciona una opción</option>
-                  {opcionesMenuConfig?.['Miércoles']
-                    ?.sort((a, b) => {
-                      if (a === "NO PEDIR") return -1;
-                      if (b === "NO PEDIR") return 1;
-                      return a.localeCompare(b);
-                    })
-                    .map((opcion, index) => (
-                      <option key={index} value={opcion.toLowerCase().replace(/\s+/g, '_')}>
-                        {opcion}
-                      </option>
-                    ))}
-                </select>
-              </label>
-              <label>Jueves:
-                <select name="jueves" value={formEdit.jueves} onChange={handleChangeEdit} className="select-edit">
-                  <option value="">Selecciona una opción</option>
-                  {opcionesMenuConfig?.Jueves
-                    ?.sort((a, b) => {
-                      if (a === "NO PEDIR") return -1;
-                      if (b === "NO PEDIR") return 1;
-                      return a.localeCompare(b);
-                    })
-                    .map((opcion, index) => (
-                      <option key={index} value={opcion.toLowerCase().replace(/\s+/g, '_')}>
-                        {opcion}
-                      </option>
-                    ))}
-                </select>
-              </label>
-              <label>Viernes:
-                <select name="viernes" value={formEdit.viernes} onChange={handleChangeEdit} className="select-edit">
-                  <option value="">Selecciona una opción</option>
-                  {opcionesMenuConfig?.Viernes
-                    ?.sort((a, b) => {
-                      if (a === "NO PEDIR") return -1;
-                      if (b === "NO PEDIR") return 1;
-                      return a.localeCompare(b);
-                    })
-                    .map((opcion, index) => (
-                      <option key={index} value={opcion.toLowerCase().replace(/\s+/g, '_')}>
-                        {opcion}
-                      </option>
-                    ))}
-                </select>
-              </label>
+              {DIAS_SEMANA.map((dia) => (
+                <label key={dia}>{DIA_LABELS[dia]}:
+                  <select name={dia} value={formEdit[dia]} onChange={handleChangeEdit} className="select-edit">
+                    <option value="">Selecciona una opción</option>
+                    {opcionesMenuConfig?.[DIA_LABELS[dia]]
+                      ?.sort((a, b) => {
+                        if (a === "NO PEDIR") return -1;
+                        if (b === "NO PEDIR") return 1;
+                        return a.localeCompare(b);
+                      })
+                      .map((opcion, index) => (
+                        <option key={index} value={opcion.toLowerCase().replace(/\s+/g, '_')}>
+                          {opcion}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+              ))}
               <label>Precio Total: <input name="precioTotal" type="number" value={formEdit.precioTotal} onChange={handleChangeEdit} className="input-edit" /></label>
               <div style={{display:'flex', gap:'1rem', marginTop:'1rem'}}>
                 <button type="submit" className="ver-historial-btn">Guardar</button>

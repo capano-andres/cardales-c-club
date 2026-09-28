@@ -232,7 +232,7 @@ const PrecioMenu = ({ readOnly = false }) => {
         border: '1px solid #dee2e6',
         color: '#666'
       }}>
-        <p><strong>Importante:</strong> La actualización de los precios del menú debe realizarse luego del cierre semanal (viernes) para asegurar la correcta aplicación en los pedidos de la próxima semana.</p>
+        <p><strong>Importante:</strong> La actualización de los precios del menú debe realizarse luego del cierre semanal (lunes) para asegurar la correcta aplicación en los pedidos de la próxima semana.</p>
         <div style={{ marginTop: '10px' }}>
           <p><strong>Tipos de precios:</strong></p>
           <ul style={{ marginTop: '5px' }}>

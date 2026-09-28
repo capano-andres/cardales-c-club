@@ -616,28 +616,6 @@
   font-size: 1em;
 }
 
-.tardio-badge {
-  background-color: #78350f;
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: normal;
-  margin-left: 0.5rem;
-}
-
-.tardio-badge-small {
-  background-color: #78350f;
-  color: white;
-  padding: 0.15rem 0.35rem;
-  border-radius: 3px;
-  font-size: 0.7rem;
-  font-weight: normal;
-  margin-left: 0.5rem;
-  display: inline-block;
-  vertical-align: middle;
-}
-
 .formulario-dia-no-disponible {
   background-color: #f8d7da;
   color: #721c24;
@@ -647,17 +625,6 @@
   font-size: 0.9em;
   text-align: center;
   border: 1px solid #f5c6cb;
-}
-
-.formulario-dia-tardio {
-  background-color: #fff3cd;
-  color: #856404;
-  padding: 8px;
-  border-radius: 4px;
-  margin-bottom: 8px;
-  font-size: 0.9em;
-  text-align: center;
-  border: 1px solid #ffeeba;
 }
 
 @media (max-width: 600px) {
@@ -814,6 +781,23 @@
 .menu-item-desc {
   margin: 0;
   cursor: default;
+}
+
+/* Postre: varios ítems separados por "/" en la misma línea, no apilados */
+.postre-items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.postre-items .menu-item-desc-wrap.postre-item {
+  display: inline-block;
+  width: auto;
+}
+
+.postre-separador {
+  color: #999;
+  margin: 0 2px;
 }
 
 /* Solo cuando hay imagen: indica visualmente que hay foto */

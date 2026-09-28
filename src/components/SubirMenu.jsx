@@ -4,10 +4,22 @@ import { collection, addDoc, serverTimestamp, doc, setDoc, getDoc } from 'fireba
 import * as pdfjsLib from 'pdfjs-dist';
 import Modal from './Modal';
 import Spinner from './Spinner';
+import { DIAS_SEMANA, DIA_LABELS } from '../constants/dias';
 import './SubirMenu.css';
 
 // Configurar el worker de PDF.js
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js`;
+
+// Sábado y domingo tienen una estructura de menú fija y distinta a la de lunes-viernes:
+// solo Menú A, Menú B, Opción Pebete y Dieta Blanda (sin postre). Las claves de pebete/dieta
+// blanda coinciden con las que ya resuelve el parser de PDF más abajo (ver EXTRA).
+const CAMPOS_FINDE_SEMANA = [
+  { key: 'menuA', label: 'Menú A' },
+  { key: 'menuB', label: 'Menú B' },
+  { key: 'menupbtx2', label: 'Opción Pebete' },
+  { key: 'dietablanda', label: 'Dieta Blanda' },
+];
+const esFinDeSemana = (dia) => dia === 'sabado' || dia === 'domingo';
 
 const SubirMenu = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -20,18 +32,20 @@ const SubirMenu = () => {
   const [menuData, setMenuData] = useState({
     semana: '',
     temporada: '',
-    dias: {
-      lunes: { esFeriado: false },
-      martes: { esFeriado: false },
-      miercoles: { esFeriado: false },
-      jueves: { esFeriado: false },
-      viernes: { esFeriado: false }
-    }
+    dias: Object.fromEntries(DIAS_SEMANA.map((dia) => [dia, { esFeriado: false }]))
   });
   const [loading, setLoading] = useState(true);
   const [diasModificados, setDiasModificados] = useState([]);
   const menuOriginal = useRef(null);
   const [modal, setModal] = useState({ isOpen: false, title: '', message: '', type: 'info' });
+
+  // Campos editables para un día: fijos para sábado/domingo, o derivados de
+  // menuStructure.opciones para el resto de la semana.
+  const getCamposDelDia = (dia) => (
+    esFinDeSemana(dia)
+      ? CAMPOS_FINDE_SEMANA
+      : (menuStructure?.opciones || []).map((opcion) => ({ key: opcion.toLowerCase().replace(/ /g, ''), label: opcion }))
+  );
 
   useEffect(() => {
     cargarEstructuraMenu();
@@ -42,12 +56,12 @@ const SubirMenu = () => {
     if (menuStructure) {
       setMenuData(prevData => {
         const diasInicializados = {};
-        ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'].forEach(dia => {
+        DIAS_SEMANA.forEach(dia => {
           diasInicializados[dia] = {
             esFeriado: prevData.dias[dia]?.esFeriado || false,
-            ...(menuStructure.opciones || []).reduce((acc, opcion) => ({
+            ...getCamposDelDia(dia).reduce((acc, { key }) => ({
               ...acc,
-              [opcion.toLowerCase().replace(/ /g, '')]: prevData.dias[dia]?.[opcion.toLowerCase().replace(/ /g, '')] || ''
+              [key]: prevData.dias[dia]?.[key] || ''
             }), {})
           };
         });
@@ -206,7 +220,7 @@ const SubirMenu = () => {
           ...prev.dias[dia],
           esFeriado,
           ...(esFeriado ? {
-            ...menuStructure.opciones.reduce((acc, opcion) => ({ ...acc, [opcion.toLowerCase().replace(/ /g, '')]: '' }), {}),
+            ...getCamposDelDia(dia).reduce((acc, { key }) => ({ ...acc, [key]: '' }), {}),
             ...(menuStructure.extras?.sandwichmiga ? { sandwichMiga: { tipo: '', cantidad: 0 } } : {}),
             ...(menuStructure.extras?.ensalada ? { ensaladas: { ensalada1: '' } } : {}),
           } : {})
@@ -468,6 +482,10 @@ const SubirMenu = () => {
 
     const pebeteEntry = findEntry('PBT', 'Pebete', 'PEBETE', 'MENUPBT');
     const sandMigaEntry = findEntry('Sand De Miga', 'Sandwich', 'SANDDEMIGA', 'SANDWICHDEMIGA');
+    // El PDF a veces escribe solo "ENSALADA:" aunque la categoría configurada se llame
+    // "Ensalada Completa" — buscar por el nombre corto también para no depender de que el
+    // PDF repita el nombre completo.
+    const ensaladaEntry = findEntry('Ensalada Completa', 'Ensalada', 'ENSALADA');
     const EXTRA = {
       'BETIJAI': { key: findKey('Beti Jai', 'BetiJai', 'BETIJAI') || 'betijai', label: 'Beti Jai', fixedDesc: null },
       'SANDWICHDEMIGA': { key: sandMigaEntry?.key || 'sanddemiga', label: sandMigaEntry?.label || 'Sand De Miga', fixedDesc: null },
@@ -475,21 +493,24 @@ const SubirMenu = () => {
       'OPCIONPEBETEX2': { key: pebeteEntry?.key || 'menupbtx2', label: pebeteEntry?.label || 'Menu PBT X 2', fixedDesc: pebeteEntry?.label || 'Menu PBT X 2' },
       'DIETABLANDA': { key: findKey('Dieta Blanda', 'DIETABLANDA') || 'dietablanda', label: 'Dieta Blanda', fixedDesc: 'Dieta Blanda' },
       'POSTRESAELECCION': { key: findKey('Postre', 'POSTRE') || 'postre', label: 'Postres', fixedDesc: null },
+      'ENSALADA': { key: ensaladaEntry?.key || 'ensaladacompleta', label: ensaladaEntry?.label || 'Ensalada Completa', fixedDesc: null },
+      // Menú A / Menú B: exclusivos de sábado y domingo, descripción variable cada semana.
+      'MENUA': { key: 'menuA', label: 'Menú A', fixedDesc: null },
+      'MENUB': { key: 'menuB', label: 'Menú B', fixedDesc: null },
     };
     // Ordenar de mas largo a mas corto para evitar matches parciales
     const catEntries = Object.entries({ ...cats, ...EXTRA })
       .sort((a, b) => b[0].length - a[0].length);
 
-    const DAYS = { LUNES: 'lunes', MARTES: 'martes', MIERCOLES: 'miercoles', JUEVES: 'jueves', VIERNES: 'viernes' };
-    const STOP_DAYS = ['SABADO', 'DOMINGO'];
+    const DAYS = {
+      LUNES: 'lunes', MARTES: 'martes', MIERCOLES: 'miercoles', JUEVES: 'jueves',
+      VIERNES: 'viernes', SABADO: 'sabado', DOMINGO: 'domingo',
+    };
     const STOP_CATS = ['PEDIDOS']; // PEDIDOS detiene la extracción al final del menú
 
     const result = {
       temporada: '', semana: '',
-      dias: {
-        lunes: { esFeriado: false }, martes: { esFeriado: false }, miercoles: { esFeriado: false },
-        jueves: { esFeriado: false }, viernes: { esFeriado: false }
-      }
+      dias: Object.fromEntries(DIAS_SEMANA.map((dia) => [dia, { esFeriado: false }])),
     };
 
     const lines = rawText.split('\n')
@@ -514,13 +535,20 @@ const SubirMenu = () => {
       const ln = normKey(line);
       if (!ln) continue;
 
-      // Fin de semana -> parar
-      if (STOP_DAYS.some(d => ln === d)) { currentDay = null; continue; }
-
       // Encabezado de dia (startsWith para cubrir "JUEVES FERIADO AÑO NUEVO", etc.)
       const dayK = Object.keys(DAYS).find(d => ln.startsWith(normKey(d)));
-      if (dayK) { currentDay = DAYS[dayK]; currentCatKey = null; stopCats = false; postreMode = false; continue; }
+      if (dayK) {
+        currentDay = DAYS[dayK];
+        currentCatKey = null;
+        stopCats = false;
+        postreMode = false;
+        if (ln.includes('FERIADO')) {
+          result.dias[currentDay].esFeriado = true;
+        }
+        continue;
+      }
       if (!currentDay) continue;
+      if (result.dias[currentDay].esFeriado) continue;
 
       // PEDIDOS detiene la extracción completamente
       if (STOP_CATS.some(k => ln.startsWith(k))) { stopCats = true; currentCatKey = null; postreMode = false; continue; }
@@ -671,17 +699,16 @@ const SubirMenu = () => {
 
       // Validar campos vacios
       const camposVacios = [];
-      const diasNombres = { lunes: 'Lunes', martes: 'Martes', miercoles: 'Miercoles', jueves: 'Jueves', viernes: 'Viernes' };
       if (!parsedMenu.temporada) camposVacios.push('Temporada');
       if (!parsedMenu.semana) camposVacios.push('Semana');
 
-      Object.entries(diasNombres).forEach(([diaKey, diaLabel]) => {
+      DIAS_SEMANA.forEach((diaKey) => {
+        const diaLabel = DIA_LABELS[diaKey];
         const diaData = parsedMenu.dias[diaKey];
         if (diaData?.esFeriado) return;
-        (menuStructure?.opciones || []).forEach(opcion => {
-          const key = opcion.toLowerCase().replace(/\s+/g, '');
+        getCamposDelDia(diaKey).forEach(({ key, label }) => {
           if (!diaData?.[key]) {
-            camposVacios.push(`${diaLabel} - ${opcion}`);
+            camposVacios.push(`${diaLabel} - ${label}`);
           }
         });
       });
@@ -735,14 +762,14 @@ const SubirMenu = () => {
 
         {!diaData.esFeriado && (
           <>
-            {menuStructure.opciones.map((opcion) => (
-              <div key={opcion} className="menu-input">
-                <label>{opcion}:</label>
+            {getCamposDelDia(dia).map(({ key, label }) => (
+              <div key={key} className="menu-input">
+                <label>{label}:</label>
                 <input
                   type="text"
-                  value={diaData[opcion.toLowerCase().replace(/ /g, '')] || ''}
-                  onChange={(e) => handleChange(dia, opcion.toLowerCase().replace(/ /g, ''), e.target.value)}
-                  placeholder={`${opcion}...`}
+                  value={diaData[key] || ''}
+                  onChange={(e) => handleChange(dia, key, e.target.value)}
+                  placeholder={`${label}...`}
                 />
               </div>
             ))}
@@ -856,7 +883,7 @@ const SubirMenu = () => {
           </div>
         </div>
 
-        {['lunes', 'martes', 'miercoles', 'jueves', 'viernes'].map(dia => (
+        {DIAS_SEMANA.map(dia => (
           <div key={dia}>
             {renderDiaInputs(dia)}
           </div>

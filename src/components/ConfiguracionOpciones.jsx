@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 import Modal from './Modal';
+import { DIAS_SEMANA as DIAS_SEMANA_KEYS, DIA_LABELS } from '../constants/dias';
 import './ConfiguracionOpciones.css';
 
-const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+const DIAS_SEMANA = DIAS_SEMANA_KEYS.map((dia) => DIA_LABELS[dia]);
 
 const MENUS_DEFAULT = [
   'BETI JAI', 'CLASICO', 'DIETA BLANDA', 'ENSALADA',

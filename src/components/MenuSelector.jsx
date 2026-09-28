@@ -85,11 +85,11 @@ const MenuSelector = () => {
     const diaSemana = hoy.getDay(); // 0=Dom, 1=Lun, ..., 6=Sab
     const hora = hoy.getHours();
     
-    // Si es viernes después de las 18:00, no mostrar ningún menú
-    if (diaSemana === 5 && hora >= 18) {
+    // Si es domingo después de las 18:00 (corte semanal), no mostrar ningún menú
+    if (diaSemana === 0 && hora >= 18) {
       return false;
     }
-    
+
     // Mostrar el menú actual si existe
     return menuActual !== null;
   };
@@ -99,11 +99,11 @@ const MenuSelector = () => {
     const diaSemana = hoy.getDay();
     const hora = hoy.getHours();
     
-    // Si es viernes después de las 18:00, no mostrar ningún menú
-    if (diaSemana === 5 && hora >= 18) {
+    // Si es domingo después de las 18:00 (corte semanal), no mostrar ningún menú
+    if (diaSemana === 0 && hora >= 18) {
       return false;
     }
-    
+
     // Verificar si estamos dentro del rango de fechas configurado
     if (fechaInicio && fechaLimite) {
       const estaDentroDelRango = hoy >= fechaInicio && hoy <= fechaLimite;
@@ -125,7 +125,7 @@ const MenuSelector = () => {
   const hoy = new Date();
   const diaSemana = hoy.getDay();
   const hora = hoy.getHours();
-  const esViernesTarde = diaSemana === 5 && hora >= 18;
+  const esDomingoTarde = diaSemana === 0 && hora >= 18;
 
   const mostrarAlerta = noHayMenus || noHayMenusDisponibles;
 
@@ -141,8 +141,8 @@ const MenuSelector = () => {
           textAlign: 'center',
           marginBottom: '1.5rem'
         }}>
-          <h3>⚠️ {esViernesTarde ? 'Cierre semanal en proceso' : 'No hay menús disponibles'}</h3>
-          <p>{esViernesTarde 
+          <h3>⚠️ {esDomingoTarde ? 'Cierre semanal en proceso' : 'No hay menús disponibles'}</h3>
+          <p>{esDomingoTarde
             ? 'El sistema está en proceso de cierre semanal. Por favor, vuelva a intentarlo más tarde.'
             : 'En este momento no hay menús disponibles para pedir.'}</p>
           <p>Por favor, vuelve a intentarlo más tarde.</p>

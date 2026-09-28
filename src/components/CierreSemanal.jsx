@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getFirestore, doc, getDoc, collection, query, where, getDocs, setDoc, deleteDoc, addDoc, Timestamp } from 'firebase/firestore';
 import Modal from './Modal';
+import { DIAS_SEMANA, DIA_LABELS } from '../constants/dias';
 import './CierreSemanal.css';
 
 const CierreSemanal = () => {
@@ -14,18 +15,19 @@ const CierreSemanal = () => {
   }, []);
 
   const verificarHorarioCierre = () => {
-    const hoy = new Date();
-    const hora = hoy.getHours();
+    const ahoraArgentina = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+    const esLunes = ahoraArgentina.getDay() === 1;
+    const hora = ahoraArgentina.getHours();
 
-    // Permitir cierre cualquier día después de las 8:00
-    const puedeCerrarAhora = hora >= 8;
+    // El cierre semanal solo puede hacerse (manualmente) los lunes a partir de las 8:00
+    const puedeCerrarAhora = esLunes && hora >= 8;
     setPuedeCerrar(puedeCerrarAhora);
     return puedeCerrarAhora;
   };
 
   const cerrarSemanaYGuardarHistorial = async () => {
     if (!verificarHorarioCierre()) {
-      setStatus('El cierre semanal solo está disponible después de las 11:00 horas.');
+      setStatus('El cierre semanal solo está disponible los lunes a partir de las 8:00 horas.');
       return;
     }
 
@@ -76,8 +78,7 @@ const CierreSemanal = () => {
             if (typeof diaData !== 'object' || diaData === null) return pedidoStr;
 
             // Obtener la lista de menús configurados para este día
-            const labelMap = { 'lunes': 'Lunes', 'martes': 'Martes', 'miercoles': 'Miercoles', 'jueves': 'Jueves', 'viernes': 'Viernes' };
-            const diaLabel = labelMap[dia] || dia;
+            const diaLabel = DIA_LABELS[dia] || dia;
             let menusList = [];
             if (opcionesCascada?.menus) {
               const menusKey = Object.keys(opcionesCascada.menus).find(k => norm(k) === norm(diaLabel)) || diaLabel;
@@ -102,7 +103,7 @@ const CierreSemanal = () => {
             const menuNorm = norm(menuTipo);
             const mappings = [
               { names: ['beti jai'], keys: ['opcion1'] },
-              { names: ['menu pbt', 'pbt', 'opcion pebete', 'pebete'], keys: ['opcionpebetex2'] },
+              { names: ['menu pbt', 'pbt', 'opcion pebete', 'pebete'], keys: ['menupbtx2'] },
               { names: ['pastas', 'pasta'], keys: ['pastas', 'pasta'] },
               { names: ['light'], keys: ['light'] },
               { names: ['clasico', 'clásico'], keys: ['clasico'] },
@@ -172,14 +173,10 @@ const CierreSemanal = () => {
           const pedidoData = docSnapshot.data();
 
           // Enriquecer cada día del pedido con la vianda
-          const pedidoEnriquecido = {
-            ...pedidoData,
-            lunes: enrichDia(pedidoData.lunes, 'lunes'),
-            martes: enrichDia(pedidoData.martes, 'martes'),
-            miercoles: enrichDia(pedidoData.miercoles, 'miercoles'),
-            jueves: enrichDia(pedidoData.jueves, 'jueves'),
-            viernes: enrichDia(pedidoData.viernes, 'viernes'),
-          };
+          const pedidoEnriquecido = { ...pedidoData };
+          DIAS_SEMANA.forEach((dia) => {
+            pedidoEnriquecido[dia] = enrichDia(pedidoData[dia], dia);
+          });
 
           await addDoc(historialRef, {
             ...pedidoEnriquecido,
@@ -221,6 +218,10 @@ const CierreSemanal = () => {
         fecha: Timestamp.fromDate(new Date())
       });
 
+      // Avisar a pantallas ya abiertas (ej. "Pedidos Próxima Semana") que los datos cambiaron,
+      // para que se refresquen solas en vez de mostrar el estado previo al cierre.
+      window.dispatchEvent(new CustomEvent('pedidosActualizados'));
+
       setStatus(existeMenuActual
         ? 'Cierre semanal completado exitosamente. Los pedidos han sido guardados en el historial.'
         : 'Cierre semanal completado exitosamente. Primera semana configurada.');
@@ -237,7 +238,7 @@ const CierreSemanal = () => {
       setModal({
         isOpen: true,
         title: 'No se puede cerrar la semana',
-        message: 'El cierre semanal solo está disponible después de las 14:00 horas.',
+        message: 'El cierre semanal solo está disponible los lunes a partir de las 8:00 horas.',
         type: 'warning',
         actions: [
           {
@@ -276,7 +277,7 @@ const CierreSemanal = () => {
         className="cerrar-semana-btn"
         onClick={handleConfirmarCerrarSemana}
         disabled={isLoading || !puedeCerrar}
-        title={!puedeCerrar ? "El cierre semanal solo está disponible después de las 14:00 horas" : ""}
+        title={!puedeCerrar ? "El cierre semanal solo está disponible los lunes a partir de las 8:00 horas" : ""}
       >
         {isLoading ? 'Procesando...' : 'Cerrar semana y guardar historial'}
       </button>

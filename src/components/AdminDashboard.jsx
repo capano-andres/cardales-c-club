@@ -63,13 +63,13 @@ const AdminDashboard = ({ userRole }) => {
         setFechaInicio(fechaInicioData);
         setFechaInicioInput(formatearParaInput(fechaInicioData));
 
-        // Calcular fecha límite máxima (viernes de la misma semana)
+        // Calcular fecha límite máxima (domingo de la misma semana)
         if (fechaInicioData) {
           const fechaInicioObj = new Date(fechaInicioData);
           const diaSemana = fechaInicioObj.getDay(); // 0 = domingo, 1 = lunes, ..., 6 = sábado
-          const diasHastaViernes = 5 - diaSemana; // días hasta el viernes
+          const diasHastaDomingo = (7 - diaSemana) % 7; // días hasta el domingo
           const fechaLimiteMax = new Date(fechaInicioObj);
-          fechaLimiteMax.setDate(fechaInicioObj.getDate() + diasHastaViernes);
+          fechaLimiteMax.setDate(fechaInicioObj.getDate() + diasHastaDomingo);
           fechaLimiteMax.setHours(23, 59, 0, 0);
           setFechaLimiteMaxima(formatearParaInput(fechaLimiteMax));
         }
@@ -89,9 +89,9 @@ const AdminDashboard = ({ userRole }) => {
     if (nuevaFechaInicio) {
       const fechaInicioObj = new Date(nuevaFechaInicio);
       const diaSemana = fechaInicioObj.getDay();
-      const diasHastaViernes = 5 - diaSemana;
+      const diasHastaDomingo = (7 - diaSemana) % 7;
       const fechaLimiteMax = new Date(fechaInicioObj);
-      fechaLimiteMax.setDate(fechaInicioObj.getDate() + diasHastaViernes);
+      fechaLimiteMax.setDate(fechaInicioObj.getDate() + diasHastaDomingo);
       fechaLimiteMax.setHours(23, 59, 0, 0);
       setFechaLimiteMaxima(fechaLimiteMax.toLocaleString('sv', { timeZone: 'America/Argentina/Buenos_Aires' }).slice(0, 16));
     }
@@ -196,13 +196,6 @@ const AdminDashboard = ({ userRole }) => {
 
   const handleVerPedidosActual = () => {
     setActiveSection('pedidosActual');
-    setTimeout(() => {
-      backButtonRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
-  };
-
-  const handleVerPedidosTardios = () => {
-    setActiveSection('pedidosTardios');
     setTimeout(() => {
       backButtonRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
@@ -373,8 +366,6 @@ const AdminDashboard = ({ userRole }) => {
         return <VerPedidos tipo="actual" readOnly={isVisor} />;
       case 'pedidosProxima':
         return <VerPedidos tipo="proxima" readOnly={isVisor} />;
-      case 'pedidosTardios':
-        return <VerPedidos tipo="tardio" readOnly={isVisor} />;
       case 'historial':
         return <HistorialPedidos readOnly={isVisor} />;
       case 'estructuraMenu':
@@ -446,10 +437,6 @@ const AdminDashboard = ({ userRole }) => {
             <span className="button-icon">📋</span>
             Pedidos Próxima Semana
           </button>
-          {/* <button className="admin-button" onClick={handleVerPedidosTardios}>
-            <span className="button-icon">📋⏰</span>
-            Pedidos Tarde
-          </button> */}
           {!isVisor && (
             <>
               <button className="admin-button special" style={{ backgroundColor: '#282a30' }} onClick={handleCierreSemanal}>

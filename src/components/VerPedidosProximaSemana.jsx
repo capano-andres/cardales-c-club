@@ -4,6 +4,7 @@ import { collection, getDocs, query, where, doc, updateDoc, getDoc, deleteDoc, a
 import * as XLSX from 'xlsx';
 import Modal from './Modal';
 import Spinner from './Spinner';
+import { DIAS_SEMANA, DIA_LABELS } from '../constants/dias';
 import './VerPedidos.css';
 
 const VerPedidosProximaSemana = ({ readOnly = false }) => {
@@ -14,7 +15,7 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [modal, setModal] = useState({ isOpen: false, title: '', message: '', type: 'info' });
   const [usuarioEditando, setUsuarioEditando] = useState(null);
-  const [formEdit, setFormEdit] = useState({ lunes: '', martes: '', miercoles: '', jueves: '', viernes: '' });
+  const [formEdit, setFormEdit] = useState(Object.fromEntries(DIAS_SEMANA.map((dia) => [dia, ''])));
   const [editLoading, setEditLoading] = useState(false);
   const [menuData, setMenuData] = useState(null);
   const [precioPorDia, setPrecioPorDia] = useState(2000);
@@ -23,8 +24,9 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
   const [editSeleccion, setEditSeleccion] = useState({});
   const [filtroNombre, setFiltroNombre] = useState('');
 
-  const diasSemana = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes'];
-  const diasSemanaFirestore = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+  const diasSemana = DIAS_SEMANA;
+  const diasSemanaFirestore = DIAS_SEMANA.map((dia) => DIA_LABELS[dia]);
+  const diasUpper = diasSemanaFirestore.map((dia) => dia.toUpperCase());
 
   useEffect(() => {
     cargarPedidos();
@@ -130,11 +132,7 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
             nombre: usuario.nombre,
             legajo: usuario.legajo,
             fecha: pedido ? pedido.fechaCreacion : '',
-            lunesData: pedido ? pedido.lunes : null,
-            martesData: pedido ? pedido.martes : null,
-            miercolesData: pedido ? pedido.miercoles : null,
-            juevesData: pedido ? pedido.jueves : null,
-            viernesData: pedido ? pedido.viernes : null,
+            ...Object.fromEntries(DIAS_SEMANA.map((dia) => [`${dia}Data`, pedido ? pedido[dia] : null])),
             tienePedido: !!pedido,
             precioTotal: precioTotal,
             bonificacion: usuario.bonificacion
@@ -213,7 +211,7 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
       if (!pedidoStr || esNoPedir(pedidoStr)) return null;
 
       if (opcionesCascada) {
-        const labelMap = { 'lunes': 'Lunes', 'martes': 'Martes', 'miercoles': 'Miercoles', 'jueves': 'Jueves', 'viernes': 'Viernes' };
+        const labelMap = DIA_LABELS;
         const menusKey = Object.keys(opcionesCascada.menus || {}).find(k => norm(k) === norm(labelMap[dia])) || labelMap[dia];
         const menusList = opcionesCascada.menus?.[menusKey] || [];
 
@@ -233,9 +231,11 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
             }
           }
         } else {
+          // Sin " Y " (no hay bebida configurada): buscar el menú y, si queda texto, es el postre
           for (const m of menusList) {
             if (norm(pedidoStr).startsWith(norm(m))) {
               menuEncontrado = m.toUpperCase();
+              postre = pedidoStr.substring(m.length).trim().toUpperCase();
               break;
             }
           }
@@ -258,7 +258,7 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
     pedidosData.forEach(usuario => {
       diasSemana.forEach((dia, index) => {
         const diaData = usuario[`${dia}Data`];
-        if (!diaData || diaData.esTardio) return;
+        if (!diaData) return;
         const opcion = diaData.pedido;
         if (opcion && !esNoPedir(opcion)) {
           const partes = extraerPartes(opcion, dia);
@@ -266,7 +266,7 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
             const diaCompleto = diasSemanaFirestore[index].toUpperCase();
 
             if (!conteo[partes.menu]) {
-              conteo[partes.menu] = { LUNES: 0, MARTES: 0, 'MIÉRCOLES': 0, JUEVES: 0, VIERNES: 0 };
+              conteo[partes.menu] = Object.fromEntries(diasUpper.map((d) => [d, 0]));
             }
             conteo[partes.menu][diaCompleto]++;
             const labelNorm = partes.menu.trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ');
@@ -276,14 +276,14 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
 
             if (partes.postre) {
               if (!conteoPostres[partes.postre]) {
-                conteoPostres[partes.postre] = { LUNES: 0, MARTES: 0, 'MIÉRCOLES': 0, JUEVES: 0, VIERNES: 0 };
+                conteoPostres[partes.postre] = Object.fromEntries(diasUpper.map((d) => [d, 0]));
               }
               conteoPostres[partes.postre][diaCompleto]++;
             }
 
             if (partes.bebida) {
               if (!conteoBebidas[partes.bebida]) {
-                conteoBebidas[partes.bebida] = { LUNES: 0, MARTES: 0, 'MIÉRCOLES': 0, JUEVES: 0, VIERNES: 0 };
+                conteoBebidas[partes.bebida] = Object.fromEntries(diasUpper.map((d) => [d, 0]));
               }
               conteoBebidas[partes.bebida][diaCompleto]++;
             }
@@ -348,7 +348,6 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
     if (!opcion) return 'NO COMPLETÓ';
     if (typeof opcion === 'object') {
       if (esNoPedir(opcion.pedido)) return 'NO PIDIÓ';
-      if (opcion.esTardio) return 'Pedido Tarde';
       const menuLabel = opcion.pedido.toUpperCase().replace(/_/g, ' ');
       return menuLabel;
     }
@@ -370,8 +369,11 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
 
     const yIndex = pedidoStr.lastIndexOf(' Y ');
     if (yIndex === -1) {
+      // Sin " Y " (no hay bebida configurada): buscar el menú y, si queda texto, es el postre
       const menuMatch = menusList.find(m => norm(pedidoStr).startsWith(norm(m)));
-      return { menu: menuMatch || pedidoStr, postre: '', bebida: '' };
+      if (!menuMatch) return { menu: pedidoStr, postre: '', bebida: '' };
+      const postreMatch = pedidoStr.substring(menuMatch.length).trim();
+      return { menu: menuMatch, postre: postreMatch, bebida: '' };
     }
 
     const bebida = pedidoStr.substring(yIndex + 3).trim();
@@ -411,11 +413,11 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
       'Nombre': usuario.nombre,
       'Legajo': usuario.legajo,
       'Fecha': usuario.fecha ? formatearFecha(usuario.fecha) : '',
-      'Lunes': usuario.lunesData === null ? 'NO COMPLETÓ' : (formatearOpcion(usuario.lunesData) === 'NO PIDIÓ' ? '' : formatearOpcion(usuario.lunesData)),
-      'Martes': usuario.martesData === null ? 'NO COMPLETÓ' : (formatearOpcion(usuario.martesData) === 'NO PIDIÓ' ? '' : formatearOpcion(usuario.martesData)),
-      'Miércoles': usuario.miercolesData === null ? 'NO COMPLETÓ' : (formatearOpcion(usuario.miercolesData) === 'NO PIDIÓ' ? '' : formatearOpcion(usuario.miercolesData)),
-      'Jueves': usuario.juevesData === null ? 'NO COMPLETÓ' : (formatearOpcion(usuario.juevesData) === 'NO PIDIÓ' ? '' : formatearOpcion(usuario.juevesData)),
-      'Viernes': usuario.viernesData === null ? 'NO COMPLETÓ' : (formatearOpcion(usuario.viernesData) === 'NO PIDIÓ' ? '' : formatearOpcion(usuario.viernesData)),
+      ...Object.fromEntries(DIAS_SEMANA.map((dia) => {
+        const diaData = usuario[`${dia}Data`];
+        const valor = diaData === null ? 'NO COMPLETÓ' : (formatearOpcion(diaData) === 'NO PIDIÓ' ? '' : formatearOpcion(diaData));
+        return [DIA_LABELS[dia], valor];
+      })),
       'Precio Total': usuario.tienePedido ? (usuario.precioTotal || 0) : 0
     }));
 
@@ -428,48 +430,37 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
       .sort((a, b) => a.localeCompare(b));
 
     // Agrupar menús por tipo base (sin el postre)
+    const nuevaFilaDias = () => Object.fromEntries(diasUpper.map((d) => [d, 0]));
     const menusPorTipo = {};
-    const totales = { LUNES: 0, MARTES: 0, MIÉRCOLES: 0, JUEVES: 0, VIERNES: 0, TOTAL: 0 };
+    const totales = { ...nuevaFilaDias(), TOTAL: 0 };
 
     opcionesResumen.forEach(label => {
       // Extraer el nombre base del menú (antes de "C/")
       const menuBase = label.includes('C/') ? label.split('C/')[0].trim() : label;
 
       // Obtener los contadores para este label específico
-      const fila = (contadores?.conteo && contadores.conteo[label]) || { LUNES: 0, MARTES: 0, MIÉRCOLES: 0, JUEVES: 0, VIERNES: 0 };
+      const fila = (contadores?.conteo && contadores.conteo[label]) || nuevaFilaDias();
 
       // Si no existe este tipo base, crearlo
       if (!menusPorTipo[menuBase]) {
-        menusPorTipo[menuBase] = { LUNES: 0, MARTES: 0, MIÉRCOLES: 0, JUEVES: 0, VIERNES: 0 };
+        menusPorTipo[menuBase] = nuevaFilaDias();
       }
 
-      // Sumar los contadores al tipo base
-      menusPorTipo[menuBase].LUNES += fila.LUNES;
-      menusPorTipo[menuBase].MARTES += fila.MARTES;
-      menusPorTipo[menuBase].MIÉRCOLES += fila.MIÉRCOLES;
-      menusPorTipo[menuBase].JUEVES += fila.JUEVES;
-      menusPorTipo[menuBase].VIERNES += fila.VIERNES;
-
-      // Sumar a los totales generales
-      totales.LUNES += fila.LUNES;
-      totales.MARTES += fila.MARTES;
-      totales.MIÉRCOLES += fila.MIÉRCOLES;
-      totales.JUEVES += fila.JUEVES;
-      totales.VIERNES += fila.VIERNES;
+      // Sumar los contadores al tipo base y a los totales generales
+      diasUpper.forEach((d) => {
+        menusPorTipo[menuBase][d] += fila[d] || 0;
+        totales[d] += fila[d] || 0;
+      });
     });
 
     // Convertir el objeto agrupado a array para Excel
     Object.entries(menusPorTipo).forEach(([menuBase, conteos]) => {
-      const totalFila = conteos.LUNES + conteos.MARTES + conteos.MIÉRCOLES + conteos.JUEVES + conteos.VIERNES;
+      const totalFila = diasUpper.reduce((sum, d) => sum + conteos[d], 0);
       totales.TOTAL += totalFila;
 
       datosContadores.push({
         'MENU': menuBase,
-        'LUNES': conteos.LUNES,
-        'MARTES': conteos.MARTES,
-        'MIÉRCOLES': conteos.MIÉRCOLES,
-        'JUEVES': conteos.JUEVES,
-        'VIERNES': conteos.VIERNES,
+        ...conteos,
         'TOTAL': totalFila
       });
     });
@@ -491,20 +482,18 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
     let wsPostres = null;
     let wsBebidas = null;
 
+    const colsResumen = [{ wch: 25 }, ...diasUpper.map(() => ({ wch: 10 })), { wch: 10 }];
+
     if (contadores?.conteoPostres && Object.keys(contadores.conteoPostres).length > 0) {
       const datosPostres = Object.entries(contadores.conteoPostres)
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([postre, valores]) => ({
           'POSTRE': postre,
-          'LUNES': valores.LUNES,
-          'MARTES': valores.MARTES,
-          'MIÉRCOLES': valores['MIÉRCOLES'],
-          'JUEVES': valores.JUEVES,
-          'VIERNES': valores.VIERNES,
-          'TOTAL': valores.LUNES + valores.MARTES + valores['MIÉRCOLES'] + valores.JUEVES + valores.VIERNES
+          ...valores,
+          'TOTAL': diasUpper.reduce((sum, d) => sum + (valores[d] || 0), 0)
         }));
       wsPostres = XLSX.utils.json_to_sheet(datosPostres);
-      wsPostres['!cols'] = [{ wch: 25 }, { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 10 }];
+      wsPostres['!cols'] = colsResumen;
     }
 
     if (contadores?.conteoBebidas && Object.keys(contadores.conteoBebidas).length > 0) {
@@ -512,15 +501,11 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([bebida, valores]) => ({
           'BEBIDA': bebida,
-          'LUNES': valores.LUNES,
-          'MARTES': valores.MARTES,
-          'MIÉRCOLES': valores['MIÉRCOLES'],
-          'JUEVES': valores.JUEVES,
-          'VIERNES': valores.VIERNES,
-          'TOTAL': valores.LUNES + valores.MARTES + valores['MIÉRCOLES'] + valores.JUEVES + valores.VIERNES
+          ...valores,
+          'TOTAL': diasUpper.reduce((sum, d) => sum + (valores[d] || 0), 0)
         }));
       wsBebidas = XLSX.utils.json_to_sheet(datosBebidas);
-      wsBebidas['!cols'] = [{ wch: 25 }, { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 10 }, { wch: 10 }, { wch: 10 }];
+      wsBebidas['!cols'] = colsResumen;
     }
 
     // Crear hojas de etiquetado por día
@@ -580,11 +565,7 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
       { wch: 25 }, // Nombre
       { wch: 15 }, // Legajo
       { wch: 20 }, // Fecha
-      { wch: 25 }, // Lunes
-      { wch: 25 }, // Martes
-      { wch: 25 }, // Miércoles
-      { wch: 25 }, // Jueves
-      { wch: 25 }, // Viernes
+      ...DIAS_SEMANA.map(() => ({ wch: 25 })), // Lunes..Domingo
       { wch: 15 }  // Precio Total
     ];
 
@@ -608,17 +589,9 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
     XLSX.writeFile(wb, `Pedidos_Proxima_Semana_${fecha}.xlsx`);
   };
 
-  // Calcular usuarios con al menos un día NO tardío
-  const filasNormales = pedidos.filter(usuario =>
-    diasSemana.some(dia => {
-      const diaData = usuario[`${dia}Data`];
-      return diaData && (!diaData.esTardio || diaData.esTardio === false);
-    })
-  );
-
   const handleFilaClick = (usuario) => {
     // Parsear los pedidos existentes para pre-cargar los selects cascada
-    const labelMap = { 'lunes': 'Lunes', 'martes': 'Martes', 'miercoles': 'Miercoles', 'jueves': 'Jueves', 'viernes': 'Viernes' };
+    const labelMap = DIA_LABELS;
     const nuevaSeleccion = {};
     diasSemana.forEach(dia => {
       const diaData = usuario[`${dia}Data`];
@@ -627,13 +600,7 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
     });
     setEditSeleccion(nuevaSeleccion);
     setUsuarioEditando(usuario);
-    setFormEdit({
-      lunes: usuario.lunesData?.pedido || '',
-      martes: usuario.martesData?.pedido || '',
-      miercoles: usuario.miercolesData?.pedido || '',
-      jueves: usuario.juevesData?.pedido || '',
-      viernes: usuario.viernesData?.pedido || ''
-    });
+    setFormEdit(Object.fromEntries(DIAS_SEMANA.map((dia) => [dia, usuario[`${dia}Data`]?.pedido || ''])));
   };
 
   const handleChangeEdit = (e) => {
@@ -641,16 +608,19 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
     setFormEdit(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleEditSeleccionCascada = (dia, campo, valor) => {
+  const handleEditSeleccionCascada = (dia, campo, valor, requierePostre = true, requiereBebida = true) => {
     setEditSeleccion(prev => {
       const nueva = { ...prev[dia], [campo]: valor };
       if (campo === 'menu') { nueva.postre = ''; nueva.bebida = ''; }
 
       let pedidoStr = '';
+      const postreListo = !requierePostre || nueva.postre;
+      const bebidaLista = !requiereBebida || nueva.bebida;
       if (nueva.menu === 'NO PEDIR') {
         pedidoStr = 'no_pedir';
-      } else if (nueva.menu && nueva.postre && nueva.bebida) {
-        pedidoStr = `${nueva.menu} ${nueva.postre} Y ${nueva.bebida}`;
+      } else if (nueva.menu && postreListo && bebidaLista) {
+        const menuConPostre = requierePostre ? `${nueva.menu} ${nueva.postre}` : nueva.menu;
+        pedidoStr = requiereBebida ? `${menuConPostre} Y ${nueva.bebida}` : menuConPostre;
       }
 
       if (pedidoStr) {
@@ -702,11 +672,7 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
         tipo: 'proxima',
         fechaCreacion: new Date(),
         precioTotal: nuevoPrecioTotal,
-        lunes: { pedido: formEdit.lunes, esTardio: usuarioEditando.lunesData?.esTardio || false },
-        martes: { pedido: formEdit.martes, esTardio: usuarioEditando.martesData?.esTardio || false },
-        miercoles: { pedido: formEdit.miercoles, esTardio: usuarioEditando.miercolesData?.esTardio || false },
-        jueves: { pedido: formEdit.jueves, esTardio: usuarioEditando.juevesData?.esTardio || false },
-        viernes: { pedido: formEdit.viernes, esTardio: usuarioEditando.viernesData?.esTardio || false }
+        ...Object.fromEntries(DIAS_SEMANA.map((dia) => [dia, { pedido: formEdit[dia] }])),
       };
 
       if (!querySnapshot.empty) {
@@ -873,11 +839,7 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
               <th>Nombre</th>
               <th>Legajo</th>
               <th>Fecha</th>
-              <th>Lunes</th>
-              <th>Martes</th>
-              <th>Miércoles</th>
-              <th>Jueves</th>
-              <th>Viernes</th>
+              {diasSemanaFirestore.map((dia) => <th key={dia}>{dia}</th>)}
               <th>Precio Total</th>
             </tr>
           </thead>
@@ -913,11 +875,7 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
             <thead>
               <tr>
                 <th>MENU</th>
-                <th>LUNES</th>
-                <th>MARTES</th>
-                <th>MIÉRCOLES</th>
-                <th>JUEVES</th>
-                <th>VIERNES</th>
+                {diasUpper.map((dia) => <th key={dia}>{dia}</th>)}
                 <th>TOTAL</th>
               </tr>
             </thead>
@@ -937,26 +895,20 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
 
                   // Si no existe este tipo base, crearlo
                   if (!menusPorTipo[menuBase]) {
-                    menusPorTipo[menuBase] = { LUNES: 0, MARTES: 0, MIÉRCOLES: 0, JUEVES: 0, VIERNES: 0 };
+                    menusPorTipo[menuBase] = Object.fromEntries(diasUpper.map((d) => [d, 0]));
                   }
 
                   // Sumar los contadores al tipo base
-                  menusPorTipo[menuBase].LUNES += valores.LUNES;
-                  menusPorTipo[menuBase].MARTES += valores.MARTES;
-                  menusPorTipo[menuBase].MIÉRCOLES += valores.MIÉRCOLES;
-                  menusPorTipo[menuBase].JUEVES += valores.JUEVES;
-                  menusPorTipo[menuBase].VIERNES += valores.VIERNES;
+                  diasUpper.forEach((d) => {
+                    menusPorTipo[menuBase][d] += valores[d] || 0;
+                  });
                 });
 
                 // Convertir a array y calcular totales
                 const filas = Object.entries(menusPorTipo).map(([menuBase, valores]) => ({
                   MENU: menuBase,
-                  LUNES: valores.LUNES,
-                  MARTES: valores.MARTES,
-                  MIÉRCOLES: valores.MIÉRCOLES,
-                  JUEVES: valores.JUEVES,
-                  VIERNES: valores.VIERNES,
-                  TOTAL: valores.LUNES + valores.MARTES + valores.MIÉRCOLES + valores.JUEVES + valores.VIERNES
+                  ...valores,
+                  TOTAL: diasUpper.reduce((sum, d) => sum + valores[d], 0)
                 }));
 
                 // Ordenar alfabéticamente
@@ -970,11 +922,7 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
                 return filas.map(fila => (
                   <tr key={fila.MENU}>
                     <td>{fila.MENU}</td>
-                    <td>{fila.LUNES}</td>
-                    <td>{fila.MARTES}</td>
-                    <td>{fila.MIÉRCOLES}</td>
-                    <td>{fila.JUEVES}</td>
-                    <td>{fila.VIERNES}</td>
+                    {diasUpper.map((dia) => <td key={dia}>{fila[dia]}</td>)}
                     <td>{fila.TOTAL}</td>
                   </tr>
                 ));
@@ -992,11 +940,7 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
                 <thead>
                   <tr>
                     <th>POSTRE</th>
-                    <th>LUNES</th>
-                    <th>MARTES</th>
-                    <th>MIÉRCOLES</th>
-                    <th>JUEVES</th>
-                    <th>VIERNES</th>
+                    {diasUpper.map((dia) => <th key={dia}>{dia}</th>)}
                     <th>TOTAL</th>
                   </tr>
                 </thead>
@@ -1004,15 +948,11 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
                   {Object.entries(contadores.conteoPostres)
                     .sort(([a], [b]) => a.localeCompare(b))
                     .map(([postre, valores]) => {
-                      const total = valores.LUNES + valores.MARTES + valores['MIÉRCOLES'] + valores.JUEVES + valores.VIERNES;
+                      const total = diasUpper.reduce((sum, d) => sum + (valores[d] || 0), 0);
                       return (
                         <tr key={postre}>
                           <td>{postre}</td>
-                          <td>{valores.LUNES}</td>
-                          <td>{valores.MARTES}</td>
-                          <td>{valores['MIÉRCOLES']}</td>
-                          <td>{valores.JUEVES}</td>
-                          <td>{valores.VIERNES}</td>
+                          {diasUpper.map((dia) => <td key={dia}>{valores[dia]}</td>)}
                           <td>{total}</td>
                         </tr>
                       );
@@ -1032,11 +972,7 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
                 <thead>
                   <tr>
                     <th>BEBIDA</th>
-                    <th>LUNES</th>
-                    <th>MARTES</th>
-                    <th>MIÉRCOLES</th>
-                    <th>JUEVES</th>
-                    <th>VIERNES</th>
+                    {diasUpper.map((dia) => <th key={dia}>{dia}</th>)}
                     <th>TOTAL</th>
                   </tr>
                 </thead>
@@ -1044,15 +980,11 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
                   {Object.entries(contadores.conteoBebidas)
                     .sort(([a], [b]) => a.localeCompare(b))
                     .map(([bebida, valores]) => {
-                      const total = valores.LUNES + valores.MARTES + valores['MIÉRCOLES'] + valores.JUEVES + valores.VIERNES;
+                      const total = diasUpper.reduce((sum, d) => sum + (valores[d] || 0), 0);
                       return (
                         <tr key={bebida}>
                           <td>{bebida}</td>
-                          <td>{valores.LUNES}</td>
-                          <td>{valores.MARTES}</td>
-                          <td>{valores['MIÉRCOLES']}</td>
-                          <td>{valores.JUEVES}</td>
-                          <td>{valores.VIERNES}</td>
+                          {diasUpper.map((dia) => <td key={dia}>{valores[dia]}</td>)}
                           <td>{total}</td>
                         </tr>
                       );
@@ -1077,7 +1009,7 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
             {diasSemana.map((dia, index) => {
               const sel = editSeleccion[dia] || { menu: '', postre: '', bebida: '' };
               const norm = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-              const labelMap = { 'lunes': 'Lunes', 'martes': 'Martes', 'miercoles': 'Miercoles', 'jueves': 'Jueves', 'viernes': 'Viernes' };
+              const labelMap = DIA_LABELS;
               const menusKey = opcionesCascada?.menus ? (Object.keys(opcionesCascada.menus).find(k => norm(k) === norm(labelMap[dia])) || labelMap[dia]) : labelMap[dia];
               const menusList = opcionesCascada?.menus?.[menusKey] || [];
 
@@ -1122,6 +1054,8 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
               }
 
               const bebidasList = opcionesCascada?.bebidas || [];
+              const hayPostres = postresList.length > 0;
+              const hayBebidas = bebidasList.length > 0;
               return (
                 <div key={dia} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   <label style={{ fontWeight: 'bold', color: '#FFA000' }}>
@@ -1136,27 +1070,27 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
                       <select
                         className="select-edit"
                         value={sel.menu}
-                        onChange={e => handleEditSeleccionCascada(dia, 'menu', e.target.value)}
+                        onChange={e => handleEditSeleccionCascada(dia, 'menu', e.target.value, hayPostres, hayBebidas)}
                       >
                         <option value="">-- Menú --</option>
                         <option value="NO PEDIR">NO PEDIR COMIDA ESTE DIA</option>
                         {menusList.map((m, i) => <option key={i} value={m}>{m}</option>)}
                       </select>
-                      {sel.menu && sel.menu !== 'NO PEDIR' && (
+                      {sel.menu && sel.menu !== 'NO PEDIR' && hayPostres && (
                         <select
                           className="select-edit"
                           value={sel.postre}
-                          onChange={e => handleEditSeleccionCascada(dia, 'postre', e.target.value)}
+                          onChange={e => handleEditSeleccionCascada(dia, 'postre', e.target.value, hayPostres, hayBebidas)}
                         >
                           <option value="">-- Postre --</option>
                           {postresList.map((p, i) => <option key={i} value={p}>{p}</option>)}
                         </select>
                       )}
-                      {sel.menu && sel.menu !== 'NO PEDIR' && sel.postre && (
+                      {sel.menu && sel.menu !== 'NO PEDIR' && (hayPostres ? sel.postre : true) && hayBebidas && (
                         <select
                           className="select-edit"
                           value={sel.bebida}
-                          onChange={e => handleEditSeleccionCascada(dia, 'bebida', e.target.value)}
+                          onChange={e => handleEditSeleccionCascada(dia, 'bebida', e.target.value, hayPostres, hayBebidas)}
                         >
                           <option value="">-- Bebida --</option>
                           {bebidasList.map((b, i) => <option key={i} value={b}>{b}</option>)}
@@ -1183,20 +1117,6 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
                         </option>
                       ))}
                     </select>
-                  )}
-                  {!menuData?.dias?.[dia]?.esFeriado && (
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
-                      <input
-                        type="checkbox"
-                        checked={usuarioEditando[`${dia}Data`]?.esTardio || false}
-                        onChange={(e) => {
-                          const newDiaData = { ...usuarioEditando[`${dia}Data`], esTardio: e.target.checked };
-                          setUsuarioEditando({ ...usuarioEditando, [`${dia}Data`]: newDiaData });
-                        }}
-                        style={{ width: '1.2rem', height: '1.2rem' }}
-                      />
-                      <span style={{ color: '#666', fontSize: '0.9rem' }}>Pedido tarde</span>
-                    </label>
                   )}
                 </div>
               );

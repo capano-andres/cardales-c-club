@@ -3,6 +3,7 @@ import { db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import Modal from './Modal';
 import Spinner from './Spinner';
+import { DIAS_SEMANA } from '../constants/dias';
 import './VerMenu.css';
 
 const VerMenu = () => {
@@ -131,7 +132,7 @@ const VerMenu = () => {
       </div>
 
       <div className="menu-dias">
-        {['lunes', 'martes', 'miercoles', 'jueves', 'viernes'].map(dia => (
+        {DIAS_SEMANA.map(dia => (
           <div key={dia}>
             {renderDiaMenu(dia, dia.charAt(0).toUpperCase() + dia.slice(1))}
           </div>
