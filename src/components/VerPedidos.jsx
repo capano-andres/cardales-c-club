@@ -34,6 +34,7 @@ const VerPedidos = ({ tipo = 'actual', readOnly = false }) => {
   const [opcionesCascada, setOpcionesCascada] = useState(null);
   const [editSeleccion, setEditSeleccion] = useState({});
   const [filtroNombre, setFiltroNombre] = useState('');
+  const [finDeSemana, setFinDeSemana] = useState({ semana: null, usuarios: [] });
 
   const diasSemana = DIAS_SEMANA;
   const diasSemanaFirestore = DIAS_SEMANA.map((dia) => DIA_LABELS[dia]);
@@ -198,6 +199,45 @@ const VerPedidos = ({ tipo = 'actual', readOnly = false }) => {
     }
   };
 
+  const cargarFinDeSemana = async () => {
+    try {
+      const historialRef = collection(db, 'historial_pedidos');
+      const qHistorial = query(historialRef, orderBy('fechaPedido', 'desc'));
+      const historialSnapshot = await getDocs(qHistorial);
+
+      if (historialSnapshot.empty) {
+        setFinDeSemana({ semana: null, usuarios: [] });
+        return;
+      }
+
+      const docsHistorial = historialSnapshot.docs.map(d => d.data());
+      const semanaMasReciente = docsHistorial[0].semana;
+      const delaSemana = docsHistorial.filter(d => d.semana === semanaMasReciente);
+
+      const usersRef = collection(db, 'users');
+      const usersSnapshot = await getDocs(usersRef);
+      const nombresPorUid = {};
+      usersSnapshot.forEach(d => {
+        const data = d.data();
+        nombresPorUid[d.id] = `${data.nombre || ''} ${data.apellido || ''}`.trim() || 'Usuario sin nombre';
+      });
+
+      const usuariosFinde = delaSemana
+        .map((p, i) => ({
+          id: p.uidUsuario || i,
+          nombre: nombresPorUid[p.uidUsuario] || 'Usuario desconocido',
+          sabadoData: p.sabado,
+          domingoData: p.domingo,
+        }))
+        .filter(u => !esNoPedir(u.sabadoData?.pedido) || !esNoPedir(u.domingoData?.pedido))
+        .sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+      setFinDeSemana({ semana: semanaMasReciente, usuarios: usuariosFinde });
+    } catch (error) {
+      console.error('Error al cargar los pedidos del fin de semana archivado:', error);
+    }
+  };
+
   useEffect(() => {
     const cargarDatos = async () => {
       try {
@@ -207,6 +247,7 @@ const VerPedidos = ({ tipo = 'actual', readOnly = false }) => {
         await cargarOpcionesMenu();
         await cargarOpcionesCascada();
         await cargarPedidos();
+        await cargarFinDeSemana();
       } catch (error) {
         setError('Error al cargar los datos iniciales');
       } finally {
@@ -218,6 +259,7 @@ const VerPedidos = ({ tipo = 'actual', readOnly = false }) => {
 
     const handlePedidosActualizados = () => {
       cargarPedidos();
+      cargarFinDeSemana();
     };
 
     window.addEventListener('pedidosActualizados', handlePedidosActualizados);
@@ -1023,6 +1065,35 @@ const VerPedidos = ({ tipo = 'actual', readOnly = false }) => {
           </button>
         </div>
       </div>
+
+      {finDeSemana.usuarios.length > 0 && (
+        <div className="resumen-container" style={{ marginBottom: '1.5rem' }}>
+          <h3>Fin de semana ({finDeSemana.semana})</h3>
+          <p style={{ fontSize: '0.85em', color: '#888', marginTop: '-0.5rem' }}>
+            Pedidos de sábado y domingo de la última semana cerrada, para consulta rápida sin tener que ir al Historial.
+          </p>
+          <div className="tabla-container">
+            <table className="tabla-pedidos">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Sábado</th>
+                  <th>Domingo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {finDeSemana.usuarios.map((u) => (
+                  <tr key={u.id}>
+                    <td>{u.nombre}</td>
+                    <td>{formatearOpcion(u.sabadoData)}</td>
+                    <td>{formatearOpcion(u.domingoData)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <div className="tabla-container">
         <table className="tabla-pedidos">
