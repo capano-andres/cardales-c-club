@@ -752,6 +752,60 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
     }
   };
 
+  const limpiarPedidosProxima = () => {
+    setModal({
+      isOpen: true,
+      title: 'Confirmar eliminación',
+      message: '¿Estás seguro de que deseas eliminar TODOS los pedidos de la próxima semana? Esta acción no se puede deshacer.',
+      type: 'warning',
+      actions: [
+        {
+          label: 'Cancelar',
+          type: 'secondary',
+          onClick: () => setModal({ isOpen: false, title: '', message: '', type: 'info' })
+        },
+        {
+          label: 'Eliminar',
+          type: 'danger',
+          onClick: confirmarEliminacionProxima
+        }
+      ]
+    });
+  };
+
+  const confirmarEliminacionProxima = async () => {
+    setModal({ isOpen: false, title: '', message: '', type: 'info' });
+    setIsDeleting(true);
+    try {
+      const pedidosRef = collection(db, 'pedidos');
+      const q = query(pedidosRef, where('tipo', '==', 'proxima'));
+      const pedidosSnapshot = await getDocs(q);
+
+      if (pedidosSnapshot.empty) {
+        setModal({ isOpen: true, title: 'Sin pedidos', message: 'No hay pedidos de la próxima semana para eliminar', type: 'info' });
+        return;
+      }
+
+      for (const docSnapshot of pedidosSnapshot.docs) {
+        await deleteDoc(docSnapshot.ref);
+      }
+
+      setModal({
+        isOpen: true,
+        title: 'Éxito',
+        message: `Se han eliminado ${pedidosSnapshot.size} pedidos de la próxima semana correctamente`,
+        type: 'success'
+      });
+
+      await cargarPedidos();
+      window.dispatchEvent(new CustomEvent('pedidosActualizados'));
+    } catch (error) {
+      setModal({ isOpen: true, title: 'Error', message: 'Error al eliminar los pedidos: ' + error.message, type: 'error' });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   // Filtrar pedidos por nombre
   const pedidosFiltrados = pedidos.filter(usuario =>
     usuario.nombre.toLowerCase().includes(filtroNombre.toLowerCase())
@@ -866,6 +920,29 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
           </tbody>
         </table>
       </div>
+
+      {!readOnly && pedidos.length > 0 && (
+        <div className="eliminar-todos-container" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.5rem' }}>
+          <button
+            className="eliminar-todos-btn"
+            onClick={limpiarPedidosProxima}
+            disabled={isDeleting}
+            style={{
+              background: '#dc2626',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '6px',
+              padding: '0.7rem 1.5rem',
+              fontWeight: 'bold',
+              fontSize: '0.95rem',
+              cursor: isDeleting ? 'not-allowed' : 'pointer',
+              opacity: isDeleting ? 0.6 : 1
+            }}
+          >
+            {isDeleting ? 'Eliminando...' : 'Eliminar todos los pedidos'}
+          </button>
+        </div>
+      )}
 
       {/* Tabla de Resumen */}
       <div className="resumen-container">

@@ -273,7 +273,7 @@ const VerPedidos = ({ tipo = 'actual', readOnly = false }) => {
     setModal({
       isOpen: true,
       title: 'Confirmar eliminación',
-      message: '¿Estás seguro de que deseas eliminar todos los pedidos? Esta acción no se puede deshacer.',
+      message: '¿Estás seguro de que deseas eliminar TODOS los pedidos de la semana actual? Esta acción no se puede deshacer.',
       type: 'warning',
       actions: [
         {
@@ -295,13 +295,14 @@ const VerPedidos = ({ tipo = 'actual', readOnly = false }) => {
     setIsDeleting(true);
     try {
       const pedidosRef = collection(db, 'pedidos');
-      const pedidosSnapshot = await getDocs(pedidosRef);
+      const q = query(pedidosRef, where('tipo', '==', 'actual'));
+      const pedidosSnapshot = await getDocs(q);
 
       if (pedidosSnapshot.empty) {
         setModal({
           isOpen: true,
           title: 'Sin pedidos',
-          message: 'No hay pedidos para eliminar',
+          message: 'No hay pedidos de la semana actual para eliminar',
           type: 'info'
         });
         return;
@@ -314,11 +315,13 @@ const VerPedidos = ({ tipo = 'actual', readOnly = false }) => {
       setModal({
         isOpen: true,
         title: 'Éxito',
-        message: `Se han eliminado ${pedidosSnapshot.size} pedidos correctamente`,
+        message: `Se han eliminado ${pedidosSnapshot.size} pedidos de la semana actual correctamente`,
         type: 'success'
       });
 
       await cargarPedidos();
+      await cargarFinDeSemana();
+      window.dispatchEvent(new CustomEvent('pedidosActualizados'));
     } catch (error) {
       setModal({
         isOpen: true,
@@ -1124,6 +1127,29 @@ const VerPedidos = ({ tipo = 'actual', readOnly = false }) => {
           </tbody>
         </table>
       </div>
+
+      {!readOnly && pedidos.length > 0 && (
+        <div className="eliminar-todos-container" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.5rem' }}>
+          <button
+            className="eliminar-todos-btn"
+            onClick={limpiarPedidosActuales}
+            disabled={isDeleting}
+            style={{
+              background: '#dc2626',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '6px',
+              padding: '0.7rem 1.5rem',
+              fontWeight: 'bold',
+              fontSize: '0.95rem',
+              cursor: isDeleting ? 'not-allowed' : 'pointer',
+              opacity: isDeleting ? 0.6 : 1
+            }}
+          >
+            {isDeleting ? 'Eliminando...' : 'Eliminar todos los pedidos'}
+          </button>
+        </div>
+      )}
 
       {isEditingModalOpen && editingUser && (
         <Modal
