@@ -7,6 +7,10 @@ import Spinner from './Spinner';
 import { DIAS_SEMANA, DIA_LABELS } from '../constants/dias';
 import './VerPedidos.css';
 
+// Mismo menú especial que en Formulario.jsx (ver ese archivo para el detalle):
+// no forma parte de opcionesMenuCascada, solo se ofrece a usuarios con `menuEspecial`.
+const MENU_SIN_ALMIDON_AZUCAR = 'Menú sin almidón y sin azúcar';
+
 const VerPedidosProximaSemana = ({ readOnly = false }) => {
   const [pedidos, setPedidos] = useState([]);
   const [contadores, setContadores] = useState({ conteo: {}, todasLasOpciones: new Set() });
@@ -65,7 +69,8 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
             nombre: `${userData.nombre || ''} ${userData.apellido || ''}`.trim() || 'Usuario sin nombre',
             email: userData.email,
             legajo: userData.legajo || 'Sin asignar',
-            bonificacion: userData.bonificacion // Preservar el valor original (true, false, o undefined)
+            bonificacion: userData.bonificacion, // Preservar el valor original (true, false, o undefined)
+            menuEspecial: userData.menuEspecial
           });
         }
       });
@@ -135,7 +140,8 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
             ...Object.fromEntries(DIAS_SEMANA.map((dia) => [`${dia}Data`, pedido ? pedido[dia] : null])),
             tienePedido: !!pedido,
             precioTotal: precioTotal,
-            bonificacion: usuario.bonificacion
+            bonificacion: usuario.bonificacion,
+            menuEspecial: usuario.menuEspecial
           };
         });
 
@@ -1088,7 +1094,8 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
               const norm = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
               const labelMap = DIA_LABELS;
               const menusKey = opcionesCascada?.menus ? (Object.keys(opcionesCascada.menus).find(k => norm(k) === norm(labelMap[dia])) || labelMap[dia]) : labelMap[dia];
-              const menusList = opcionesCascada?.menus?.[menusKey] || [];
+              const menusListBase = opcionesCascada?.menus?.[menusKey] || [];
+              const menusList = usuarioEditando.menuEspecial ? [...menusListBase, MENU_SIN_ALMIDON_AZUCAR] : menusListBase;
 
               // Resolver postres por día (auto/manual)
               const postresBase = opcionesCascada?.postres || [];
@@ -1133,6 +1140,8 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
               const bebidasList = opcionesCascada?.bebidas || [];
               const hayPostres = postresList.length > 0;
               const hayBebidas = bebidasList.length > 0;
+              const esMenuSinPostre = sel.menu === MENU_SIN_ALMIDON_AZUCAR;
+              const hayPostresEfectivo = hayPostres && !esMenuSinPostre;
               return (
                 <div key={dia} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   <label style={{ fontWeight: 'bold', color: '#FFA000' }}>
@@ -1147,27 +1156,31 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
                       <select
                         className="select-edit"
                         value={sel.menu}
-                        onChange={e => handleEditSeleccionCascada(dia, 'menu', e.target.value, hayPostres, hayBebidas)}
+                        onChange={e => {
+                          const nuevoMenu = e.target.value;
+                          const requierePostreNuevo = hayPostres && nuevoMenu !== MENU_SIN_ALMIDON_AZUCAR;
+                          handleEditSeleccionCascada(dia, 'menu', nuevoMenu, requierePostreNuevo, hayBebidas);
+                        }}
                       >
                         <option value="">-- Menú --</option>
                         <option value="NO PEDIR">NO PEDIR COMIDA ESTE DIA</option>
                         {menusList.map((m, i) => <option key={i} value={m}>{m}</option>)}
                       </select>
-                      {sel.menu && sel.menu !== 'NO PEDIR' && hayPostres && (
+                      {sel.menu && sel.menu !== 'NO PEDIR' && hayPostresEfectivo && (
                         <select
                           className="select-edit"
                           value={sel.postre}
-                          onChange={e => handleEditSeleccionCascada(dia, 'postre', e.target.value, hayPostres, hayBebidas)}
+                          onChange={e => handleEditSeleccionCascada(dia, 'postre', e.target.value, hayPostresEfectivo, hayBebidas)}
                         >
                           <option value="">-- Postre --</option>
                           {postresList.map((p, i) => <option key={i} value={p}>{p}</option>)}
                         </select>
                       )}
-                      {sel.menu && sel.menu !== 'NO PEDIR' && (hayPostres ? sel.postre : true) && hayBebidas && (
+                      {sel.menu && sel.menu !== 'NO PEDIR' && (hayPostresEfectivo ? sel.postre : true) && hayBebidas && (
                         <select
                           className="select-edit"
                           value={sel.bebida}
-                          onChange={e => handleEditSeleccionCascada(dia, 'bebida', e.target.value, hayPostres, hayBebidas)}
+                          onChange={e => handleEditSeleccionCascada(dia, 'bebida', e.target.value, hayPostresEfectivo, hayBebidas)}
                         >
                           <option value="">-- Bebida --</option>
                           {bebidasList.map((b, i) => <option key={i} value={b}>{b}</option>)}

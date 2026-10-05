@@ -22,7 +22,8 @@ const AdminUsers = ({ mode = "view", readOnly = false, canEditUsername = true })
     apellido: '',
     usuario: '',
     legajo: '',
-    bonificacion: false
+    bonificacion: false,
+    menuEspecial: false
   });
   const [error, setError] = useState('');
   const [isDeletingUser, setIsDeletingUser] = useState(false);
@@ -30,6 +31,8 @@ const AdminUsers = ({ mode = "view", readOnly = false, canEditUsername = true })
   const auth = getAuth();
   const [isEditingUser, setIsEditingUser] = useState(false);
   const [editingUserId, setEditingUserId] = useState(null);
+  const [isEditingMenuEspecial, setIsEditingMenuEspecial] = useState(false);
+  const [editingMenuEspecialUserId, setEditingMenuEspecialUserId] = useState(null);
   const [showCreatePassword, setShowCreatePassword] = useState(false);
   const [editingUsernameId, setEditingUsernameId] = useState(null);
   const [editingUsernameValue, setEditingUsernameValue] = useState('');
@@ -100,6 +103,7 @@ const AdminUsers = ({ mode = "view", readOnly = false, canEditUsername = true })
         legajo: dataToUse.legajo,
         beneficio: "estandar",
         bonificacion: dataToUse.bonificacion,
+        menuEspecial: dataToUse.menuEspecial || false,
         fechaCreacion: serverTimestamp()
       });
 
@@ -121,7 +125,8 @@ const AdminUsers = ({ mode = "view", readOnly = false, canEditUsername = true })
         apellido: '',
         usuario: '',
         legajo: '',
-        bonificacion: false
+        bonificacion: false,
+        menuEspecial: false
       });
       setShowCreateForm(false);
       setShowCreatePassword(false); // Reset password visibility
@@ -270,6 +275,36 @@ const AdminUsers = ({ mode = "view", readOnly = false, canEditUsername = true })
     }
   };
 
+  const handleEditMenuEspecial = async (userId, currentMenuEspecial) => {
+    setIsEditingMenuEspecial(true);
+    setEditingMenuEspecialUserId(userId);
+    try {
+      await setDoc(doc(db, "users", userId), {
+        menuEspecial: !currentMenuEspecial
+      }, { merge: true });
+
+      setModal({
+        isOpen: true,
+        title: 'Éxito',
+        message: 'Habilitación del menú sin almidón y sin azúcar actualizada exitosamente',
+        type: 'success'
+      });
+
+      fetchUsers(); // Actualizar la lista de usuarios
+    } catch (error) {
+      console.error('Error al actualizar usuario:', error);
+      setModal({
+        isOpen: true,
+        title: 'Error',
+        message: 'Error al actualizar la habilitación del menú especial: ' + error.message,
+        type: 'error'
+      });
+    } finally {
+      setIsEditingMenuEspecial(false);
+      setEditingMenuEspecialUserId(null);
+    }
+  };
+
   const startEditingUsername = (userId, currentUsername) => {
     setEditingUsernameId(userId);
     setEditingUsernameValue(currentUsername || '');
@@ -391,6 +426,7 @@ const AdminUsers = ({ mode = "view", readOnly = false, canEditUsername = true })
                 <p><strong>Apellido:</strong> {user.apellido || "Sin apellido"}</p>
                 <p><strong>Rol:</strong> {user.rol || "usuario"}</p>
                 <p><strong>Bonificación:</strong> {user.bonificacion ? "Sí" : "No"}</p>
+                <p><strong>Menú Sin Almidón/Azúcar:</strong> {user.menuEspecial ? "Sí" : "No"}</p>
                 {/*<p><strong>Beneficio:</strong> {user.beneficio || "estandar"}</p>*/}
               </div>
               {!readOnly && (
@@ -401,6 +437,13 @@ const AdminUsers = ({ mode = "view", readOnly = false, canEditUsername = true })
                     disabled={isEditingUser || user.rol === 'admin'}
                   >
                     {isEditingUser && editingUserId === user.id ? 'Actualizando...' : 'Cambiar Bonificación'}
+                  </button>
+                  <button
+                    className="edit-user-button"
+                    onClick={() => handleEditMenuEspecial(user.id, user.menuEspecial)}
+                    disabled={isEditingMenuEspecial || user.rol === 'admin'}
+                  >
+                    {isEditingMenuEspecial && editingMenuEspecialUserId === user.id ? 'Actualizando...' : 'Cambiar Menú Especial'}
                   </button>
                   <button
                     className="delete-user-button"
@@ -550,6 +593,23 @@ const AdminUsers = ({ mode = "view", readOnly = false, canEditUsername = true })
               disabled={isCreatingUser}
             />
             Usuario Bonificado
+          </label>
+        </div>
+
+        <div className="form-group checkbox-group">
+          <label htmlFor="menuEspecial">
+            <input
+              type="checkbox"
+              id="menuEspecial"
+              name="menuEspecial"
+              checked={formData.menuEspecial}
+              onChange={(e) => setFormData(prev => ({
+                ...prev,
+                menuEspecial: e.target.checked
+              }))}
+              disabled={isCreatingUser}
+            />
+            Habilitado para Menú Sin Almidón y Sin Azúcar
           </label>
         </div>
 

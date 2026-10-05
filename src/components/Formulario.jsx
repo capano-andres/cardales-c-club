@@ -9,6 +9,11 @@ import Spinner from './Spinner';
 import { DIAS_SEMANA, DIA_LABELS, ordenEnSemana } from '../constants/dias';
 import "./Formulario.css";
 
+// Menú especial para usuarios con la condición habilitada (ver AdminUsers.jsx, campo
+// `menuEspecial`). No forma parte de `opcionesMenuCascada`: se agrega a mano en el select
+// solo para esos usuarios, y nunca ofrece paso de postre.
+const MENU_SIN_ALMIDON_AZUCAR = 'Menú sin almidón y sin azúcar';
+
 // Normaliza texto para comparación flexible: sin tildes, sin puntuación, sin mayúsculas, sin espacios extra
 const normalizarTexto = (t) =>
   (t ?? '').trim().toLowerCase()
@@ -456,7 +461,10 @@ const Formulario = ({ readOnly = false, tipo = 'actual' }) => {
     const sel = seleccion[diaKey] || { menu: '', postre: '', bebida: '' };
     const norm = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const menusKey = opcionesCascada?.menus ? (Object.keys(opcionesCascada.menus).find(k => norm(k) === norm(diaLabel)) || diaLabel) : diaLabel;
-    const menusList = opcionesCascada?.menus?.[menusKey] || [];
+    const menusListBase = opcionesCascada?.menus?.[menusKey] || [];
+    // Usuarios con la condición habilitada ven además el menú especial, todos los días,
+    // aunque no esté cargado en la configuración general de opciones del menú.
+    const menusList = userData?.menuEspecial ? [...menusListBase, MENU_SIN_ALMIDON_AZUCAR] : menusListBase;
     // Obtener los postres según el modo configurado (por día)
     const postresBase = opcionesCascada?.postres || [];
     let postresList = postresBase;
@@ -503,6 +511,9 @@ const Formulario = ({ readOnly = false, tipo = 'actual' }) => {
     }
     // Días sin postre configurado (ej. sábado/domingo): se salta el paso de postre.
     const hayPostres = postresList.length > 0;
+    // El menú especial sin almidón/azúcar nunca lleva postre, sin importar el día.
+    const esMenuSinPostre = sel.menu === MENU_SIN_ALMIDON_AZUCAR;
+    const hayPostresEfectivo = hayPostres && !esMenuSinPostre;
     const bebidasList = opcionesCascada?.bebidas || [];
     // Este cliente no ofrece bebidas: si no hay ninguna configurada, se salta el paso.
     const hayBebidas = bebidasList.length > 0;
@@ -521,29 +532,33 @@ const Formulario = ({ readOnly = false, tipo = 'actual' }) => {
                 <select
                   className="formulario-select"
                   value={sel.menu}
-                  onChange={e => handleSeleccionCascada(diaKey, 'menu', e.target.value, hayPostres, hayBebidas)}
+                  onChange={e => {
+                    const nuevoMenu = e.target.value;
+                    const requierePostreNuevo = hayPostres && nuevoMenu !== MENU_SIN_ALMIDON_AZUCAR;
+                    handleSeleccionCascada(diaKey, 'menu', nuevoMenu, requierePostreNuevo, hayBebidas);
+                  }}
                   disabled={isDisabled}
                 >
                   <option value="">-- Menu --</option>
                   <option value="NO PEDIR">NO PEDIR COMIDA ESTE DIA</option>
                   {menusList.map((m, i) => <option key={i} value={m}>{m}</option>)}
                 </select>
-                {sel.menu && sel.menu !== 'NO PEDIR' && hayPostres && (
+                {sel.menu && sel.menu !== 'NO PEDIR' && hayPostresEfectivo && (
                   <select
                     className="formulario-select"
                     value={sel.postre}
-                    onChange={e => handleSeleccionCascada(diaKey, 'postre', e.target.value, hayPostres, hayBebidas)}
+                    onChange={e => handleSeleccionCascada(diaKey, 'postre', e.target.value, hayPostresEfectivo, hayBebidas)}
                     disabled={isDisabled}
                   >
                     <option value="">-- Postre --</option>
                     {postresList.map((p, i) => <option key={i} value={p}>{p}</option>)}
                   </select>
                 )}
-                {sel.menu && sel.menu !== 'NO PEDIR' && (hayPostres ? sel.postre : true) && hayBebidas && (
+                {sel.menu && sel.menu !== 'NO PEDIR' && (hayPostresEfectivo ? sel.postre : true) && hayBebidas && (
                   <select
                     className="formulario-select"
                     value={sel.bebida}
-                    onChange={e => handleSeleccionCascada(diaKey, 'bebida', e.target.value, hayPostres, hayBebidas)}
+                    onChange={e => handleSeleccionCascada(diaKey, 'bebida', e.target.value, hayPostresEfectivo, hayBebidas)}
                     disabled={isDisabled}
                   >
                     <option value="">-- Bebida --</option>
