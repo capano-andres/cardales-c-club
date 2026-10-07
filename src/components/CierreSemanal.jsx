@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getFirestore, doc, getDoc, collection, query, where, getDocs, setDoc, deleteDoc, addDoc, Timestamp } from 'firebase/firestore';
 import Modal from './Modal';
-import { DIAS_SEMANA, DIA_LABELS } from '../constants/dias';
+import { DIAS_SEMANA, DIA_LABELS, claveMenusDelDia } from '../constants/dias';
 import './CierreSemanal.css';
 
 const CierreSemanal = () => {
@@ -78,7 +78,8 @@ const CierreSemanal = () => {
             if (typeof diaData !== 'object' || diaData === null) return pedidoStr;
 
             // Obtener la lista de menús configurados para este día
-            const diaLabel = DIA_LABELS[dia] || dia;
+            // Un feriado con vianda usa la lista de menús del sábado.
+            const diaLabel = DIA_LABELS[claveMenusDelDia(dia, diaData)] || dia;
             let menusList = [];
             if (opcionesCascada?.menus) {
               const menusKey = Object.keys(opcionesCascada.menus).find(k => norm(k) === norm(diaLabel)) || diaLabel;

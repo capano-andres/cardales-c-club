@@ -4,22 +4,11 @@ import { collection, addDoc, serverTimestamp, doc, setDoc, getDoc } from 'fireba
 import * as pdfjsLib from 'pdfjs-dist';
 import Modal from './Modal';
 import Spinner from './Spinner';
-import { DIAS_SEMANA, DIA_LABELS } from '../constants/dias';
+import { DIAS_SEMANA, DIA_LABELS, CAMPOS_FINDE_SEMANA, CLAVES_FINDE, esFinDeSemana } from '../constants/dias';
 import './SubirMenu.css';
 
 // Configurar el worker de PDF.js
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js`;
-
-// Sábado y domingo tienen una estructura de menú fija y distinta a la de lunes-viernes:
-// solo Menú A, Menú B, Opción Pebete y Dieta Blanda (sin postre). Las claves de pebete/dieta
-// blanda coinciden con las que ya resuelve el parser de PDF más abajo (ver EXTRA).
-const CAMPOS_FINDE_SEMANA = [
-  { key: 'menuA', label: 'Menú A' },
-  { key: 'menuB', label: 'Menú B' },
-  { key: 'menupbtx2', label: 'Opción Pebete' },
-  { key: 'dietablanda', label: 'Dieta Blanda' },
-];
-const esFinDeSemana = (dia) => dia === 'sabado' || dia === 'domingo';
 
 const SubirMenu = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -39,12 +28,15 @@ const SubirMenu = () => {
   const menuOriginal = useRef(null);
   const [modal, setModal] = useState({ isOpen: false, title: '', message: '', type: 'info' });
 
-  // Campos editables para un día: fijos para sábado/domingo, o derivados de
-  // menuStructure.opciones para el resto de la semana.
-  const getCamposDelDia = (dia) => (
-    esFinDeSemana(dia)
+  const getCamposEntreSemana = () =>
+    (menuStructure?.opciones || []).map((opcion) => ({ key: opcion.toLowerCase().replace(/ /g, ''), label: opcion }));
+
+  // Campos editables para un día: fijos para sábado/domingo y feriados (que pueden tener
+  // vianda de fin de semana), o derivados de menuStructure.opciones para el resto.
+  const getCamposDelDia = (dia, diaData) => (
+    esFinDeSemana(dia) || diaData?.esFeriado
       ? CAMPOS_FINDE_SEMANA
-      : (menuStructure?.opciones || []).map((opcion) => ({ key: opcion.toLowerCase().replace(/ /g, ''), label: opcion }))
+      : getCamposEntreSemana()
   );
 
   useEffect(() => {
@@ -59,7 +51,7 @@ const SubirMenu = () => {
         DIAS_SEMANA.forEach(dia => {
           diasInicializados[dia] = {
             esFeriado: prevData.dias[dia]?.esFeriado || false,
-            ...getCamposDelDia(dia).reduce((acc, { key }) => ({
+            ...getCamposDelDia(dia, prevData.dias[dia]).reduce((acc, { key }) => ({
               ...acc,
               [key]: prevData.dias[dia]?.[key] || ''
             }), {})
@@ -212,6 +204,7 @@ const SubirMenu = () => {
   // };
 
   const handleFeriadoChange = (dia, esFeriado) => {
+    const vaciar = (campos) => campos.reduce((acc, { key }) => ({ ...acc, [key]: '' }), {});
     setMenuData(prev => ({
       ...prev,
       dias: {
@@ -219,11 +212,15 @@ const SubirMenu = () => {
         [dia]: {
           ...prev.dias[dia],
           esFeriado,
+          // Al marcar feriado se vacía todo; el admin puede volver a cargar los 4 campos de
+          // fin de semana si ese feriado hay vianda. Al desmarcar un día de semana, se
+          // descartan los campos de fin de semana para no guardarlos de más.
           ...(esFeriado ? {
-            ...getCamposDelDia(dia).reduce((acc, { key }) => ({ ...acc, [key]: '' }), {}),
+            ...vaciar(getCamposEntreSemana()),
+            ...vaciar(CAMPOS_FINDE_SEMANA),
             ...(menuStructure.extras?.sandwichmiga ? { sandwichMiga: { tipo: '', cantidad: 0 } } : {}),
             ...(menuStructure.extras?.ensalada ? { ensaladas: { ensalada1: '' } } : {}),
-          } : {})
+          } : (esFinDeSemana(dia) ? {} : vaciar(CAMPOS_FINDE_SEMANA)))
         }
       }
     }));
@@ -548,14 +545,16 @@ const SubirMenu = () => {
         continue;
       }
       if (!currentDay) continue;
-      if (result.dias[currentDay].esFeriado) continue;
+      // En un feriado solo se leen las categorías de fin de semana (Menú A/B, Pebete, Dieta
+      // Blanda): si aparecen, ese feriado tiene vianda; si no, queda como feriado sin servicio.
+      const esDiaFeriado = result.dias[currentDay].esFeriado;
 
       // PEDIDOS detiene la extracción completamente
       if (STOP_CATS.some(k => ln.startsWith(k))) { stopCats = true; currentCatKey = null; postreMode = false; continue; }
       if (stopCats) continue;
 
       // Detectar línea de POSTRE → entrar en modo postre
-      if (ln.startsWith('POSTRE')) {
+      if (!esDiaFeriado && ln.startsWith('POSTRE')) {
         const alias = ln.startsWith('POSTRESAELECCION') ? 'POSTRESAELECCION' : 'POSTRE';
         const desc = extractDesc(line, alias).trim();
         if (desc) {
@@ -577,7 +576,10 @@ const SubirMenu = () => {
       }
 
       // Intentar hacer match de una categoria
-      const catMatch = catEntries.find(([alias]) => ln.startsWith(alias));
+      const entradasDelDia = esDiaFeriado
+        ? catEntries.filter(([, info]) => CLAVES_FINDE.includes(typeof info === 'object' ? info.key : info))
+        : catEntries;
+      const catMatch = entradasDelDia.find(([alias]) => ln.startsWith(alias));
       if (catMatch) {
         const [alias, info] = catMatch;
         const catKey = typeof info === 'object' ? info.key : info;
@@ -706,7 +708,7 @@ const SubirMenu = () => {
         const diaLabel = DIA_LABELS[diaKey];
         const diaData = parsedMenu.dias[diaKey];
         if (diaData?.esFeriado) return;
-        getCamposDelDia(diaKey).forEach(({ key, label }) => {
+        getCamposDelDia(diaKey, diaData).forEach(({ key, label }) => {
           if (!diaData?.[key]) {
             camposVacios.push(`${diaLabel} - ${label}`);
           }
@@ -760,21 +762,24 @@ const SubirMenu = () => {
           </label>
         </div>
 
-        {!diaData.esFeriado && (
-          <>
-            {getCamposDelDia(dia).map(({ key, label }) => (
-              <div key={key} className="menu-input">
-                <label>{label}:</label>
-                <input
-                  type="text"
-                  value={diaData[key] || ''}
-                  onChange={(e) => handleChange(dia, key, e.target.value)}
-                  placeholder={`${label}...`}
-                />
-              </div>
-            ))}
-          </>
+        {diaData.esFeriado && (
+          <p className="feriado-ayuda">
+            Si ese feriado hay vianda, cargá Menú A / Menú B / Opción Pebete / Dieta Blanda.
+            Dejalos vacíos si no hay servicio.
+          </p>
         )}
+
+        {getCamposDelDia(dia, diaData).map(({ key, label }) => (
+          <div key={key} className="menu-input">
+            <label>{label}:</label>
+            <input
+              type="text"
+              value={diaData[key] || ''}
+              onChange={(e) => handleChange(dia, key, e.target.value)}
+              placeholder={`${label}...`}
+            />
+          </div>
+        ))}
       </div>
     );
   };

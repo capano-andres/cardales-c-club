@@ -4,7 +4,7 @@ import { collection, getDocs, query, where, doc, updateDoc, getDoc, deleteDoc, a
 import * as XLSX from 'xlsx';
 import Modal from './Modal';
 import Spinner from './Spinner';
-import { DIAS_SEMANA, DIA_LABELS } from '../constants/dias';
+import { DIAS_SEMANA, DIA_LABELS, feriadoSinServicio, feriadoConServicio, claveMenusDelDia } from '../constants/dias';
 import './VerPedidos.css';
 
 // Mismo menú especial que en Formulario.jsx (ver ese archivo para el detalle):
@@ -1093,7 +1093,11 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
               const sel = editSeleccion[dia] || { menu: '', postre: '', bebida: '' };
               const norm = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
               const labelMap = DIA_LABELS;
-              const menusKey = opcionesCascada?.menus ? (Object.keys(opcionesCascada.menus).find(k => norm(k) === norm(labelMap[dia])) || labelMap[dia]) : labelMap[dia];
+              const diaMenuData = menuData?.dias?.[dia];
+              // Feriado con vianda: usa la lista de menús del sábado y no ofrece postre.
+              const esFeriadoConVianda = feriadoConServicio(diaMenuData);
+              const labelMenus = labelMap[claveMenusDelDia(dia, diaMenuData)] || labelMap[dia];
+              const menusKey = opcionesCascada?.menus ? (Object.keys(opcionesCascada.menus).find(k => norm(k) === norm(labelMenus)) || labelMenus) : labelMenus;
               const menusListBase = opcionesCascada?.menus?.[menusKey] || [];
               const menusList = usuarioEditando.menuEspecial ? [...menusListBase, MENU_SIN_ALMIDON_AZUCAR] : menusListBase;
 
@@ -1138,7 +1142,7 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
               }
 
               const bebidasList = opcionesCascada?.bebidas || [];
-              const hayPostres = postresList.length > 0;
+              const hayPostres = postresList.length > 0 && !esFeriadoConVianda;
               const hayBebidas = bebidasList.length > 0;
               const esMenuSinPostre = sel.menu === MENU_SIN_ALMIDON_AZUCAR;
               const hayPostresEfectivo = hayPostres && !esMenuSinPostre;
@@ -1147,7 +1151,7 @@ const VerPedidosProximaSemana = ({ readOnly = false }) => {
                   <label style={{ fontWeight: 'bold', color: '#FFA000' }}>
                     {diasSemanaFirestore[index]}:
                   </label>
-                  {menuData?.dias?.[dia]?.esFeriado ? (
+                  {feriadoSinServicio(menuData?.dias?.[dia]) ? (
                     <div style={{ color: '#b91c1c', fontWeight: 'bold', margin: '0.5rem 0' }}>
                       FERIADO - No hay servicio de comida este día
                     </div>

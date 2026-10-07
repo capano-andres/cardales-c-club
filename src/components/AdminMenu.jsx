@@ -4,7 +4,7 @@ import { doc, getDoc, deleteDoc, setDoc } from 'firebase/firestore';
 import Modal from './Modal';
 import Spinner from './Spinner';
 import jsPDF from 'jspdf';
-import { DIAS_SEMANA, DIA_LABELS } from '../constants/dias';
+import { DIAS_SEMANA, DIA_LABELS, CAMPOS_FINDE_SEMANA, esDiaTipoFinde, feriadoSinServicio } from '../constants/dias';
 import './AdminMenu.css';
 
 const AdminMenu = ({ onMenuDeleted, tipo = 'actual', readOnly = false }) => {
@@ -211,6 +211,14 @@ const AdminMenu = ({ onMenuDeleted, tipo = 'actual', readOnly = false }) => {
     );
   };
 
+  // Campos de un día: los 4 de fin de semana para sábado, domingo y feriados con vianda;
+  // los de menuStructure.opciones para el resto.
+  const camposDelDia = (dia, diaData) => (
+    esDiaTipoFinde(dia, diaData)
+      ? CAMPOS_FINDE_SEMANA
+      : (menuStructure?.opciones || []).map((opcion) => ({ key: opcion.toLowerCase().replace(/ /g, ''), label: opcion }))
+  );
+
   const generarPDF = () => {
     if (!menuData) return;
 
@@ -263,7 +271,7 @@ const AdminMenu = ({ onMenuDeleted, tipo = 'actual', readOnly = false }) => {
         pdf.text(dia.nombre, margin, yPosition);
         yPosition += lineHeight * 1.2;
 
-        if (diaData.esFeriado) {
+        if (feriadoSinServicio(diaData)) {
           pdf.setFontSize(12);
           pdf.setFont('helvetica', 'normal');
           pdf.text('FERIADO - No hay servicio de comida este día', margin, yPosition);
@@ -276,8 +284,7 @@ const AdminMenu = ({ onMenuDeleted, tipo = 'actual', readOnly = false }) => {
         pdf.setFont('helvetica', 'normal');
 
         if (menuStructure?.opciones) {
-          menuStructure.opciones.forEach(opcion => {
-            const opcionKey = opcion.toLowerCase().replace(/ /g, '');
+          camposDelDia(dia.key, diaData).forEach(({ key: opcionKey, label: opcion }) => {
             if (diaData[opcionKey] && opcionKey !== 'postre') {
               const text = `${opcion}: ${diaData[opcionKey]}`;
               const lines = pdf.splitTextToSize(text, textWidth);
@@ -374,7 +381,7 @@ const AdminMenu = ({ onMenuDeleted, tipo = 'actual', readOnly = false }) => {
     if (!menuData?.dias[dia]) return null;
     const diaData = menuData.dias[dia];
 
-    if (diaData.esFeriado) {
+    if (feriadoSinServicio(diaData)) {
       return (
         <div className="dia-menu feriado">
           <h3>{titulo}</h3>
@@ -387,11 +394,10 @@ const AdminMenu = ({ onMenuDeleted, tipo = 'actual', readOnly = false }) => {
       <div className="dia-menu">
         <h3>{titulo}</h3>
         <div className="menu-items">
-          {menuStructure?.opciones?.map((opcion) => {
-            const opcionKey = opcion.toLowerCase().replace(/ /g, '');
+          {camposDelDia(dia, diaData).map(({ key: opcionKey, label: opcion }) => {
             if (diaData[opcionKey] && opcionKey !== 'postre') {
               return (
-                <div key={opcion} className="menu-item">
+                <div key={opcionKey} className="menu-item">
                   <h4>{opcion}</h4>
                   {renderEditableField(dia, opcionKey, diaData[opcionKey])}
                 </div>

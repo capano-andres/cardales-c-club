@@ -4,6 +4,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import Spinner from './Spinner';
 import Modal from './Modal';
+import { feriadoSinServicio } from '../constants/dias';
 import './ImagenesMenu.css';
 
 const DOC_IMAGENES = 'textoImagenes';
@@ -19,7 +20,7 @@ const extraerTextos = (menuData) => {
   const IGNORAR = new Set(['esFeriado', 'hayCambios', 'diasModificados', 'ultimaModificacion', 'semana', 'temporada']);
 
   Object.values(menuData.dias).forEach(diaData => {
-    if (!diaData || diaData.esFeriado) return;
+    if (!diaData || feriadoSinServicio(diaData)) return;
     Object.entries(diaData).forEach(([key, value]) => {
       if (IGNORAR.has(key)) return;
       if (key.endsWith('_img')) return;

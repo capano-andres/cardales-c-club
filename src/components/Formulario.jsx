@@ -6,7 +6,7 @@ import { getFirestore, doc, getDoc, setDoc, collection, query, orderBy, limit, g
 import { catalogDb } from '../firebase';
 import Modal from './Modal';
 import Spinner from './Spinner';
-import { DIAS_SEMANA, DIA_LABELS, ordenEnSemana } from '../constants/dias';
+import { DIAS_SEMANA, DIA_LABELS, ordenEnSemana, feriadoSinServicio, feriadoConServicio, claveMenusDelDia } from '../constants/dias';
 import "./Formulario.css";
 
 // Menú especial para usuarios con la condición habilitada (ver AdminUsers.jsx, campo
@@ -241,7 +241,7 @@ const Formulario = ({ readOnly = false, tipo = 'actual' }) => {
           );
 
           const renderDiaMenuItems = (diaData) => {
-            if (!diaData || diaData.esFeriado) {
+            if (!diaData || feriadoSinServicio(diaData)) {
               return (
                 <div className="menu-opcion-feriado">
                   FERIADO - No hay servicio de comida este día
@@ -420,7 +420,7 @@ const Formulario = ({ readOnly = false, tipo = 'actual' }) => {
       setData(prevData => {
         const newData = { ...prevData };
         DIAS_SEMANA.forEach((dia) => {
-          if (menuData.dias[dia]?.esFeriado) {
+          if (feriadoSinServicio(menuData.dias[dia])) {
             newData[dia] = "no_pedir";
           }
         });
@@ -453,14 +453,18 @@ const Formulario = ({ readOnly = false, tipo = 'actual' }) => {
   };
 
   const renderDiaFormulario = (diaKey, diaLabel, diaFirestore) => {
-    const esFeriado = menuData?.dias[diaFirestore]?.esFeriado;
+    const diaMenuData = menuData?.dias[diaFirestore];
+    const esFeriado = feriadoSinServicio(diaMenuData);
+    // Feriado con vianda: se comporta como fin de semana (lista de menús del sábado, sin postre).
+    const esFeriadoConVianda = feriadoConServicio(diaMenuData);
     const yaTienePedido = menuActual?.[diaKey]?.pedido && menuActual[diaKey].pedido !== 'no_pedir';
     const isDisabled = esFeriado ||
       (tipo === 'actual' && (yaTienePedido || !isDiaDisponible(diaKey, ahora)));
     // || (diaSemana === 0 || diaSemana === 6); // TEMP: deshabilitado para pruebas
     const sel = seleccion[diaKey] || { menu: '', postre: '', bebida: '' };
     const norm = (s) => (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const menusKey = opcionesCascada?.menus ? (Object.keys(opcionesCascada.menus).find(k => norm(k) === norm(diaLabel)) || diaLabel) : diaLabel;
+    const labelMenus = DIA_LABELS[claveMenusDelDia(diaKey, diaMenuData)] || diaLabel;
+    const menusKey = opcionesCascada?.menus ? (Object.keys(opcionesCascada.menus).find(k => norm(k) === norm(labelMenus)) || labelMenus) : labelMenus;
     const menusListBase = opcionesCascada?.menus?.[menusKey] || [];
     // Usuarios con la condición habilitada ven además el menú especial, todos los días,
     // aunque no esté cargado en la configuración general de opciones del menú.
@@ -509,8 +513,8 @@ const Formulario = ({ readOnly = false, tipo = 'actual' }) => {
       const postresDiaKey = Object.keys(opcionesCascada.postresPorDia).find(k => norm(k) === norm(diaLabel)) || diaLabel;
       postresList = opcionesCascada.postresPorDia[postresDiaKey] || postresBase;
     }
-    // Días sin postre configurado (ej. sábado/domingo): se salta el paso de postre.
-    const hayPostres = postresList.length > 0;
+    // Días sin postre configurado (ej. sábado/domingo) o feriado con vianda: se salta el paso de postre.
+    const hayPostres = postresList.length > 0 && !esFeriadoConVianda;
     // El menú especial sin almidón/azúcar nunca lleva postre, sin importar el día.
     const esMenuSinPostre = sel.menu === MENU_SIN_ALMIDON_AZUCAR;
     const hayPostresEfectivo = hayPostres && !esMenuSinPostre;
@@ -597,7 +601,7 @@ const Formulario = ({ readOnly = false, tipo = 'actual' }) => {
     // Verificar que todos los días tengan una opción seleccionada, excepto los que no estÃn disponibles
     const diasSinSeleccion = Object.entries(data)
       .filter(([key, value]) => {
-        const esFeriado = menuData?.dias[key]?.esFeriado;
+        const esFeriado = feriadoSinServicio(menuData?.dias[key]);
         const esDiaPasado = isPastDay(key, ahora);
         const estaDisponible = !esDiaPasado;
         // Considerar "no_pedir" como una selecciÃ³n vÃlida
@@ -1051,12 +1055,13 @@ const Formulario = ({ readOnly = false, tipo = 'actual' }) => {
               {Object.entries(menuSemanal).map(([dia, opciones]) => {
                 const diaLower = dia.toLowerCase();
                 const diaKey = DIAS_SEMANA.includes(diaLower) ? diaLower : diaLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-                const esFeriado = menuData?.dias[diaKey]?.esFeriado;
+                const esFeriadoDia = !!menuData?.dias[diaKey]?.esFeriado;
+                const esFeriado = feriadoSinServicio(menuData?.dias[diaKey]);
                 return (
                   <div key={dia} className="menu-semanal-dia">
                     <h3 className="menu-semanal-dia-titulo">
                       {dia}
-                      {esFeriado && <span className="feriado-badge">FERIADO</span>}
+                      {esFeriadoDia && <span className="feriado-badge">FERIADO</span>}
                     </h3>
                     {esFeriado ? (
                       <div className="menu-opcion-feriado">
@@ -1116,7 +1121,7 @@ const Formulario = ({ readOnly = false, tipo = 'actual' }) => {
           {(() => {
             // Verificar si hay algún día sin pedido y que no sea feriado
             const algunDiaSinPedido = DIAS_SEMANA.some(dia => {
-              const esFeriado = menuData?.dias[dia]?.esFeriado;
+              const esFeriado = feriadoSinServicio(menuData?.dias[dia]);
               const tienePedido = menuActual?.[dia]?.pedido && menuActual?.[dia]?.pedido !== "no_pedir";
               const esDiaPasado = isPastDay(dia, ahora);
               const estaDisponible = !esDiaPasado;
