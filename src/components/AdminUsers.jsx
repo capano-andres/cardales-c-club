@@ -36,6 +36,8 @@ const AdminUsers = ({ mode = "view", readOnly = false, canEditUsername = true })
   const [showCreatePassword, setShowCreatePassword] = useState(false);
   const [editingUsernameId, setEditingUsernameId] = useState(null);
   const [editingUsernameValue, setEditingUsernameValue] = useState('');
+  const [editingField, setEditingField] = useState(null); // { userId, field } para nombre/apellido
+  const [editingFieldValue, setEditingFieldValue] = useState('');
 
   useEffect(() => {
     fetchUsers();
@@ -369,6 +371,93 @@ const AdminUsers = ({ mode = "view", readOnly = false, canEditUsername = true })
     }
   };
 
+  const startEditingField = (userId, field, currentValue) => {
+    setEditingField({ userId, field });
+    setEditingFieldValue(currentValue || '');
+  };
+
+  const cancelEditingField = () => {
+    setEditingField(null);
+    setEditingFieldValue('');
+  };
+
+  const handleSaveField = async () => {
+    if (!editingField) return;
+    const { userId, field } = editingField;
+    const etiqueta = field === 'nombre' ? 'nombre' : 'apellido';
+    const nuevoValor = editingFieldValue.trim();
+    if (!nuevoValor) {
+      setModal({
+        isOpen: true,
+        title: 'Error',
+        message: `El ${etiqueta} no puede estar vacío.`,
+        type: 'error'
+      });
+      return;
+    }
+
+    try {
+      await setDoc(doc(db, "users", userId), {
+        [field]: nuevoValor
+      }, { merge: true });
+
+      setModal({
+        isOpen: true,
+        title: 'Éxito',
+        message: `El ${etiqueta} se actualizó exitosamente.`,
+        type: 'success'
+      });
+
+      cancelEditingField();
+      fetchUsers();
+    } catch (error) {
+      console.error(`Error al actualizar ${etiqueta}:`, error);
+      setModal({
+        isOpen: true,
+        title: 'Error',
+        message: `Error al actualizar el ${etiqueta}: ` + error.message,
+        type: 'error'
+      });
+    }
+  };
+
+  // Fila editable en línea (mismo estilo que el Usuario) para nombre / apellido.
+  const renderCampoEditable = (user, field, label, textoVacio) => {
+    const editando = editingField?.userId === user.id && editingField?.field === field;
+    if (editando) {
+      return (
+        <div className="username-edit-container">
+          <strong>{label}:</strong>
+          <input
+            type="text"
+            className="username-edit-input"
+            value={editingFieldValue}
+            onChange={(e) => setEditingFieldValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSaveField();
+              if (e.key === 'Escape') cancelEditingField();
+            }}
+            autoFocus
+          />
+          <button className="username-save-btn" onClick={handleSaveField} title="Guardar">✓</button>
+          <button className="username-cancel-btn" onClick={cancelEditingField} title="Cancelar">✗</button>
+        </div>
+      );
+    }
+    return (
+      <p className="username-display">
+        <strong>{label}:</strong> {user[field] || textoVacio}
+        {canEditUsername && !readOnly && (
+          <button
+            className="edit-username-button"
+            onClick={() => startEditingField(user.id, field, user[field])}
+            title={`Editar ${label.toLowerCase()}`}
+          >✏️</button>
+        )}
+      </p>
+    );
+  };
+
   const renderUsersList = () => (
     <div className="users-list">
       <div className="users-header">
@@ -422,8 +511,8 @@ const AdminUsers = ({ mode = "view", readOnly = false, canEditUsername = true })
                 )}
                 <p><strong>Email:</strong> {user.email}</p>
                 <p><strong>Legajo:</strong> {user.legajo || "No asignado"}</p>
-                <p><strong>Nombre:</strong> {user.nombre || "Sin nombre"}</p>
-                <p><strong>Apellido:</strong> {user.apellido || "Sin apellido"}</p>
+                {renderCampoEditable(user, 'nombre', 'Nombre', 'Sin nombre')}
+                {renderCampoEditable(user, 'apellido', 'Apellido', 'Sin apellido')}
                 <p><strong>Rol:</strong> {user.rol || "usuario"}</p>
                 <p><strong>Bonificación:</strong> {user.bonificacion ? "Sí" : "No"}</p>
                 <p><strong>Menú Sin Almidón/Azúcar:</strong> {user.menuEspecial ? "Sí" : "No"}</p>
